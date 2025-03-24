@@ -1,0 +1,187 @@
+---
+title: Beyond twitter - Exploring new social networks for digital disease detection
+subtitle: "Case study: France"
+author: Heiner Atze, PhD
+bibliography: ../dig_epi.bib
+jupyter: digepi
+format:
+  pdf:
+    pdf-engine: tectonic
+---
+
+```{python}
+#| echo: false
+import pandas as pd
+import matplotlib.pyplot as plt
+import langdetect
+
+from multiprocessing import Pool
+```
+
+# TODOs
+
+## Basal network activity, accounting for growing user base
+
+Proxy for basic network activity: posts containing keywords whose appearance should correlate well with overal user activity : `traffic` for example.
+
+- TODO: implement method to count all messages with specific keyword
+    - [x] does not need to store content or metadata 
+    - [x] current dlt pipeline is overkill and takes too much time
+    - [x] keep closing window approach
+    - [x] multiple connections
+
+### MUST HAVE reproducibility check, ask provider ? 
+
+## US Data
+
+Cannot be retrieved from WHO since 2025
+
+## Tweet processing
+
+- symptom extraction
+  - LLM, open source ?
+  - keyword screening ?
+
+- stemming and stuff ?
+
+# Introduction
+
+- Elon Musk events
+- history of Bluesky
+- technical details (decentralized)
+
+# Methods
+
+## Datasets
+
+### Official data
+
+#### Sentinelles
+```{python}
+sent = pd.read_csv('./data/inc-25-PAY-ds2.csv')
+```
+
+#### WHO
+
+<!-- TODO load csv directly from source -->
+
+```{python}
+flunetfr = pd.read_csv("./data/flunet.csv")\
+    .query("COUNTRY_CODE=='FRA'")
+flunetfr['ISO_WEEKSTARTDATE'] = pd.to_datetime(flunetfr.ISO_WEEKSTARTDATE)
+fluidfr = pd.read_csv("./data/fluid.csv")\
+    .query("COUNTRY_CODE=='FRA'")
+fluidfr['ISO_WEEKSTARTDATE'] = pd.to_datetime(fluidfr.ISO_WEEKSTARTDATE)
+```
+
+### Bluesky messages
+
+```{python}
+grippe = pd.concat(
+    [
+        pd.read_csv(f) for f in (
+            "./data/Bluesky test grippe.csv",
+            "./data/Bluesky test grippe end 24-11-11.csv"
+            )
+        ]
+).drop_duplicates().dropna(subset = 'text').reset_index(drop=True)
+grippe['date'] = pd.to_datetime(grippe['date'], format = 'mixed')
+
+rhume = pd.read_csv(
+    "./data/Bluesky rhume.csv",
+)
+rhume['date'] = pd.to_datetime(rhume['date'], format = 'mixed')
+```
+
+### Surveillance data
+
+
+### Bluesky messages
+
+Bluesky datasets were extracted the APIs available at @communalytic. 
+
+### Keyword list
+
+- grippe
+- rhume
+
+### Language detection
+
+Language detection to disambiguate French from German tweets (grippe) was performed using the `langdetect` [ref] module.
+
+```{python}
+def detect_language(msg: str) -> str:
+    try:
+        return langdetect.detect(msg)
+    except:
+        return ""
+```
+
+<!-- TOO LONG -->
+
+```{python}
+with Pool(8) as p:
+    grippe['lang'] = p.map(detect_language, grippe.text)
+```
+
+```{python}
+grippe_fr_tw = grippe.query("lang=='fr' & ~(text.str.contains('aviaire'))").set_index('date').resample('1w').count().text.loc[:'2025-03-03'] 
+filter_idx = grippe_fr_tw.index
+
+rhume_tw = rhume.set_index('date').resample('1w').count().text.loc[filter_idx]
+fluidfr = fluidfr.set_index("ISO_WEEKSTARTDATE").resample("1w").sum().loc[filter_idx]
+flunetfr = flunetfr.set_index("ISO_WEEKSTARTDATE").resample("1w").sum().loc[filter_idx]
+```
+
+```{python}
+def rolling_std(data, window: int):
+    tmp = np.zeros_like(data)
+    w_start = 0
+    w_end = window - 1
+    
+    for i in range(data.shape[0] - window):
+        sl = data[w_start:w_end,:]
+        mu = sl.mean(axis = 0)
+        sigma = sl.std(axis = 0) or 1
+        tmp[w_end+1,:][:] = np.divide(np.subtract(data[w_end+1,:], mu), sigma)
+        
+        w_start += 1
+        w_end += 1
+        
+    return tmp        
+```
+
+```{python}
+import numpy as np
+```
+
+```{python}
+df = pd.DataFrame()
+df.index = filter_idx
+
+df['grippe'] = grippe_fr_tw
+df['grippe_std'] = rolling_std(df[['grippe']].values, 7)
+df['rhume'] = rhume_tw
+df['ili_cases'] = fluidfr.ILI_CASE
+df['inf_vir'] = flunetfr.INF_ALL
+df['inf_vir_std'] = rolling_std(flunetfr[['INF_ALL']].values, 7)
+```
+
+
+# Results
+
+## Correlation analysis
+
+### Complete dataset
+```{python}
+df.corr()
+```
+
+### Truncated dataset
+
+```{python}
+df.loc['2024':].corr()
+```
+
+
+# Bibliography {#refs}

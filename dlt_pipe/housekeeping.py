@@ -9,8 +9,17 @@ from datetime import timedelta
 import threading
 from tqdm import tqdm  # For the progress bar
 import time # for debugging
-from bsky_tools import *
 
+if __name__ != '__main__':
+    from ..bsky_tools import *
+else:
+    import sys
+    sys.path.append(
+        os.path.join(
+            os.path.dirname(__file__), '../../'
+                     )
+    )
+    from project.bsky_tools import *
 # from .dlt_bluesky import get_posts_count_adaptive_sliding_window_reverse  # Keep the import
 
 def create_query_params(

@@ -1,0 +1,55 @@
+**Prompt:**
+Analyze the following tweet-like message to determine if it describes the user's own influenza-like illness (ILI). ILI is defined by:
+- Fever ≥38°C (100°F) **AND**
+- At least one respiratory symptom (cough or sore throat) **PLUS**
+- Additional systemic symptoms (headache, muscle aches, chills, fatigue, nasal congestion)
+
+**Instructions:**
+1. First, determine if the message is about the user's personal experience:
+   - Look for first-person pronouns (I, me, my) or direct references to self
+   - Exclude messages about others' illnesses or general health information
+
+2. If it's about the user's own experience, classify as "ILI-Related" if all three conditions are met:
+   - Explicit or implicit fever indication
+   - Presence of cough/sore throat
+   - ≥1 systemic symptom from list above
+
+3. Classify as "Non-ILI" if:
+   - Not about user's personal experience
+   - No fever context
+   - Symptoms better explained by other conditions (e.g., allergies, COVID-19 specific terms)
+   - Mentions vaccines without symptom reporting
+
+4. For ILI-Related messages:
+   - Extract symptoms using exact wording from text
+   - Note symptom duration if mentioned
+   - Flag severity indicators: "difficulty breathing", "chest pain", "persistent vomiting"
+
+**Response Format:**
+{
+  "PersonalExperience": "[Yes/No]",
+  "Classification": "[ILI-Related/Non-ILI]",
+  "Symptoms": ["symptom1", "symptom2", ...],
+  "Duration": "[if specified]",
+  "SeverityFlags": ["flag1", ...]
+}
+
+**Example Message 1:** "I've been down with a 102°F fever, nasty cough, and body aches for 2 days now. This flu is brutal!"
+**Example Output 1:** 
+{
+  "PersonalExperience": "Yes",
+  "Classification": "ILI-Related",
+  "Symptoms": ["102°F fever", "nasty cough", "body aches"],
+  "Duration": "2 days",
+  "SeverityFlags": []
+}
+
+**Example Message 2:** "CDC reports flu cases are on the rise. Remember to get your flu shot!"
+**Example Output 2:** 
+{
+  "PersonalExperience": "No",
+  "Classification": "Non-ILI",
+  "Symptoms": [],
+  "Duration": "",
+  "SeverityFlags": []
+}

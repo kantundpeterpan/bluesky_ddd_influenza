@@ -1,3 +1,4 @@
+.gc_creds
 .venv
 *.duckdb
 byd_twitter_ddd_files

@@ -302,7 +302,7 @@ def test_res():
 pipeline = dlt.pipeline(
     pipeline_name="bluesky",
     destination="duckdb",
-    dataset_name="influenza"
+    dataset_name="posts"
 )
 
 # query = 'influenza'

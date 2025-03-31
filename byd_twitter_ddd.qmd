@@ -32,17 +32,85 @@ Proxy for basic network activity: posts containing keywords whose appearance sho
 
 ### MUST HAVE reproducibility check, ask provider ? 
 
+- [ ] repeated retrieval of a query on randomly chosen dates
+- [ ] check for retrieved message ids 
+
 ## US Data
 
-Cannot be retrieved from WHO since 2025
-
+- Cannot be retrieved from WHO since 2025
+- directly available via CDC 
+  
 ## Tweet processing
 
+### Symptom extraction
+
+#### Using large-language models, "unsupervised"
 - symptom extraction
-  - LLM, open source ?
-  - keyword screening ?
+  - LLM, open source ? for disease labeling and/or user localisation
+
+```json
+// symptom extraction schema
+{
+    "influenza" :{
+        "type":"bool"
+    },
+    influenza_symptoms:{
+        "type":"array",
+        "items":{
+            "type":"string"
+        }
+    }
+}
+```
+
+--> fine-tuning for outlook
+
+#### Keyword screening
+
+- from @SignoriniTwitter2011
+
+*Directly influenza (human, porcine) related keywords*
+
+- flu, swine, influenza, vaccine, tamiflu, oseltamivir, zanamivir, relenza, amantadine, rimantadine, pneumonia, h1n1, symptom, syndrome, illness. 
+ 
+
+- Additional keywords were used to examine other aspects of public concern, including disease transmission in particular social contexts (i.e., keywords travel, trip, flight, fly, cruise and ship), disease countermeasures (i.e., keywords wash, hand, hygiene and mask), and consumer concerns about pork consumption (i.e., keywords pork and bacon)
+
 
 - stemming and stuff ?
+
+### User localistation
+
+#### LLM
+
+```json
+{
+    "user":{
+        "type":"object",
+        "properties":{
+            {
+                "userid":{
+                    "type":"string"
+                },
+                "country":{
+                    "type":"string"
+                },
+                "city":{
+                    "type":"string"
+                }
+            }
+        }
+    }
+}
+```
+
+#### Rule-based
+
+## Research questions
+
+- explorative: Can bluesky replace twitter for DDD ?
+  - metadata ?
+  - check
 
 # Introduction
 
@@ -66,39 +134,26 @@ sent = pd.read_csv('./data/inc-25-PAY-ds2.csv')
 <!-- TODO load csv directly from source -->
 
 ```{python}
+country = "FRA"
 flunetfr = pd.read_csv("./data/flunet.csv")\
-    .query("COUNTRY_CODE=='FRA'")
+    .query(f"COUNTRY_CODE=='{country}'")
 flunetfr['ISO_WEEKSTARTDATE'] = pd.to_datetime(flunetfr.ISO_WEEKSTARTDATE)
 fluidfr = pd.read_csv("./data/fluid.csv")\
-    .query("COUNTRY_CODE=='FRA'")
+    .query(f"COUNTRY_CODE=='{country}'")
 fluidfr['ISO_WEEKSTARTDATE'] = pd.to_datetime(fluidfr.ISO_WEEKSTARTDATE)
 ```
 
 ### Bluesky messages
-
-```{python}
-grippe = pd.concat(
-    [
-        pd.read_csv(f) for f in (
-            "./data/Bluesky test grippe.csv",
-            "./data/Bluesky test grippe end 24-11-11.csv"
-            )
-        ]
-).drop_duplicates().dropna(subset = 'text').reset_index(drop=True)
-grippe['date'] = pd.to_datetime(grippe['date'], format = 'mixed')
-
-rhume = pd.read_csv(
-    "./data/Bluesky rhume.csv",
-)
-rhume['date'] = pd.to_datetime(rhume['date'], format = 'mixed')
-```
 
 ### Surveillance data
 
 
 ### Bluesky messages
 
-Bluesky datasets were extracted the APIs available at @communalytic. 
+Bluesky datasets were extracted by using freely available data engineering tools: 
+
+- `dlt`: data load tool for calling the bluesky API
+- `duckdb`: data storage used by `dlt`
 
 ### Keyword list
 
@@ -107,48 +162,55 @@ Bluesky datasets were extracted the APIs available at @communalytic.
 
 ### Language detection
 
-Language detection to disambiguate French from German tweets (grippe) was performed using the `langdetect` [ref] module.
-
-```{python}
-def detect_language(msg: str) -> str:
-    try:
-        return langdetect.detect(msg)
-    except:
-        return ""
-```
+Language detection to disambiguate French from German tweets (grippe) was based on the automatically detected language transmitted in the message's metadata
 
 <!-- TOO LONG -->
 
+# Load data
 ```{python}
-with Pool(8) as p:
-    grippe['lang'] = p.map(detect_language, grippe.text)
+from bsky_tools import pipeline
+dataset = pipeline.dataset()
+msg_kws = ['grippe', 'rhume', 'fievre', 'courbatures', 'tamiflu', 'gestesbarrieres']
+tot = pd.concat(
+    dataset[x].df() for x in msg_kws
+)
+grippe = dataset['grippe'].df()
+rhume = dataset['rhume'].df()
 ```
 
 ```{python}
-grippe_fr_tw = grippe.query("lang=='fr' & ~(text.str.contains('aviaire'))").set_index('date').resample('1w').count().text.loc[:'2025-03-03'] 
-filter_idx = grippe_fr_tw.index
+# Messages
+grippe_fr_tw = grippe \
+    .query("record__langs.str.contains('fr') & ~(record__text.str.contains('aviaire'))") \
+    .set_index('record__created_at').resample('W-MON', label = 'left') \
+    .count().record__text.loc[:'2025-03-03']
 
-rhume_tw = rhume.set_index('date').resample('1w').count().text.loc[filter_idx]
-fluidfr = fluidfr.set_index("ISO_WEEKSTARTDATE").resample("1w").sum().loc[filter_idx]
-flunetfr = flunetfr.set_index("ISO_WEEKSTARTDATE").resample("1w").sum().loc[filter_idx]
+rhume_tw = rhume \
+    .set_index('record__created_at').resample('W-MON', label = 'left') \
+    .count().record__text.loc[grippe_fr_tw.index]
+
+grippe_fr_tw.index = pd.to_datetime(grippe_fr_tw.index.date) 
+rhume_tw.index = grippe_fr_tw.index
+filter_idx = pd.to_datetime(grippe_fr_tw.index)
 ```
 
 ```{python}
-def rolling_std(data, window: int):
-    tmp = np.zeros_like(data)
-    w_start = 0
-    w_end = window - 1
-    
-    for i in range(data.shape[0] - window):
-        sl = data[w_start:w_end,:]
-        mu = sl.mean(axis = 0)
-        sigma = sl.std(axis = 0) or 1
-        tmp[w_end+1,:][:] = np.divide(np.subtract(data[w_end+1,:], mu), sigma)
-        
-        w_start += 1
-        w_end += 1
-        
-    return tmp        
+# Case counts
+fluidfr = fluidfr \
+    .set_index("ISO_WEEKSTARTDATE") \
+    .resample("W-MON", label = 'left').sum()#.loc[filter_idx]
+
+flunetfr = flunetfr \
+    .set_index("ISO_WEEKSTARTDATE") \
+    .resample("W-MON", label = 'left').sum()#.loc[filter_idx]
+```
+
+```{python}
+base = (
+    pd.read_csv('dlt_pipe/baseline_meteo.csv', index_col = 0) + pd.read_csv('dlt_pipe/baseline_travail.csv', index_col = 0)
+    ).fillna(0)
+base.index = pd.to_datetime(base.index)
+base = base.resample("W-MON", label = 'left').sum()
 ```
 
 ```{python}
@@ -160,13 +222,12 @@ df = pd.DataFrame()
 df.index = filter_idx
 
 df['grippe'] = grippe_fr_tw
-df['grippe_std'] = rolling_std(df[['grippe']].values, 7)
+# df['grippe_std'] = rolling_std(df[['grippe']].values, 7)
 df['rhume'] = rhume_tw
 df['ili_cases'] = fluidfr.ILI_CASE
 df['inf_vir'] = flunetfr.INF_ALL
-df['inf_vir_std'] = rolling_std(flunetfr[['INF_ALL']].values, 7)
+# df['inf_vir_std'] = rolling_std(flunetfr[['INF_ALL']].values, 7)
 ```
-
 
 # Results
 
@@ -183,5 +244,12 @@ df.corr()
 df.loc['2024':].corr()
 ```
 
+## Exploratory plots
+
+
+
+```{python}
+
+```
 
 # Bibliography {#refs}

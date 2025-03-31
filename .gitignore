@@ -1,3 +1,7 @@
+.gc_creds
 .venv
 *.duckdb
 byd_twitter_ddd_files
+
+__pycache__
+*/string_sanitizer.log

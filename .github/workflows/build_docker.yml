@@ -36,7 +36,7 @@ jobs:
           file: orchestration/Dockerfile # Name of the Dockerfile
           push: true
           tags: |
-            docker.io/${{ github.repository_owner }}/bsky-housekeeping:latest
+            docker.io/${{ github.repository_owner }}/digepi_bsky:latest
             
 # docker.io/${{ github.repository_owner }}/bsky-housekeeping:${{ github.sha }} # Tag with commit SHA for traceability
 

@@ -33,7 +33,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: . # Location of the Dockerfile
-          file: Dockerfile # Name of the Dockerfile
+          file: orchestration/Dockerfile # Name of the Dockerfile
           push: true
           tags: |
             docker.io/${{ github.repository_owner }}/bsky-housekeeping:latest

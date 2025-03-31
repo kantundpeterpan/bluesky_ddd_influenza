@@ -5,6 +5,7 @@ from dlt.sources.helpers.rest_client.paginators import JSONResponseCursorPaginat
 from datetime import datetime, timezone
 from datetime import timedelta
 from urllib.parse import quote_plus
+import fire
 
 # Bluesky API Client
 bluesky_client = RESTClient(
@@ -15,10 +16,7 @@ bluesky_client = RESTClient(
 import logging
 
 # Configure logging
-# logging.basicConfig(
-#     filename='string_sanitizer.log',
-#     level=logging.INFO,
-#     format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='string_sanitizer.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def sanitize_string_with_emojis(input_string):
     """
@@ -57,87 +55,6 @@ def sanitize_strings_in_record(record, sanitize_function):
     else:
         # Return other data types as-is
         return record
-    
-def get_posts_count_adaptive_sliding_window_reverse(
-    query: str, start_date: str, end_date: str,
-    limit: int = 100):
-    """
-    Fetches posts using an adaptive sliding window, starting each window from the earliest
-    post time of the previous window, given that the API returns recent posts first.
-    Ensures all datetime objects are timezone-aware and in UTC.
-    """
-    next_date = datetime.fromisoformat(end_date.replace("Z", "+00:00")).astimezone(
-        timezone.utc)  # Ensure UTC
-    start_date_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00")).astimezone(
-        timezone.utc)  # Ensure UTC
-
-    # posts_count = 0
-
-    while next_date > start_date_dt:
-        
-        # Format dates for the API
-        until_str = next_date.isoformat().replace("+00:00", "Z")
-        encoded_query = quote_plus(query)
-
-        params = {
-            "q": encoded_query,
-            "until": until_str,
-            "since": start_date,  # Fetch until the overall start date, for each query the start date is a fixed value
-            "limit": limit,
-        }
-
-
-        posts = bluesky_client.get(  # Explicitly using GET
-            "app.bsky.feed.searchPosts",
-            params=params
-        ).json()
-        
-        # print(posts)
-        try:
-            posts = posts['posts']
-        except Exception as e:
-            print(e)
-            print(posts)
-            break
-        # No results found in this window
-        # that means that there are no posts between current next_date
-        # and start_date, which means there no posts left to retrieve
-        if not posts:
-            # print('no posts retrieved')
-            break
-        
-        #count no of posts
-        posts_count = len(posts)
-        
-        
-        earliest_post_time = None
-        # Update next_date based on the earliest post in the current window
-        # post are returned in chronological order
-        # most recent first
-        # earliest_post_time = datetime.fromisoformat(
-        #     posts[-1]['record']['createdAt'].replace("Z", "+00:00")
-        #     ).astimezone(
-        #             timezone.utc
-        #             )
-        
-        for post in posts:
-            record = post['record']
-            created_at = record.get("createdAt")
-            if created_at:
-                post_datetime = datetime.fromisoformat(created_at.replace("Z", "+00:00")).astimezone(
-                    timezone.utc)  # Ensure UTC
-
-                if earliest_post_time is None or post_datetime < earliest_post_time:
-                    earliest_post_time = post_datetime
-            
-        yield {
-            "period_start":earliest_post_time,
-            "period_end": next_date,
-            "post_count": posts_count
-            }
-        
-        next_date = earliest_post_time
-        next_date -= timedelta(microseconds=1)
 
 def create_query_params_from_date(
     query: str,
@@ -266,11 +183,7 @@ def fetch_posts_for_chunk(query, start_date, end_date, queue, limit):
     posts = list(get_posts_adaptive_sliding_window_reverse(query, start_date, end_date, limit=limit))
     queue.put(posts)
 
-@dlt.resource(
-    # columns={"record": {"langs": "array<string>"}}
-    write_disposition='append',
-    parallelized=True
-)
+@dlt.resource(primary_key=("uri"), write_disposition="merge")
 def fetch_posts_multiproc(query: str, date_str: str, n_chunks: int = 4, limit: int = 100):
     """
     Fetches posts for a given query and date string, using multiprocessing to divide the day into chunks.
@@ -303,46 +216,24 @@ def fetch_posts_multiproc(query: str, date_str: str, n_chunks: int = 4, limit: i
         for post in posts:
             yield post
 
+def run(query: str, date: str, verbose: bool = True):
+    
+    # Initialize dlt pipeline
+    pipeline = dlt.pipeline(
+        pipeline_name="bsky_posts",
+        destination="bigquery",
+        dataset_name="bsky_posts"
+    )
+    
+    load_info = pipeline.run(
+        fetch_posts_multiproc(
+            query=query, date_str=date, n_chunks=1
+        ),
+        table_name=query
+    )
 
-
-@dlt.resource
-def test_res():
-    record = {'embed':"E'Cette image est tirée de l''article de Slate cité par Laure Dasinière.\nCovid, les virus de la grippe se transmettent par voie aérosol, par ces trs fi"}
-    posts = [record]
-    for post in posts:
-        record = post.get("record", {})
-        embed = post.get("embed", {})
-        # process langs fields
-        if 'langs' in record.keys():
-            record['langs'] = ','.join(record['langs']) if record['langs'] else ''
-        else:
-            record['langs'] = ''
-        # record['text'] = sanitize_string_with_emojis(record['text'])
-        record = sanitize_strings_in_record(
-            record, sanitize_string_with_emojis
-        )
-        embed = sanitize_strings_in_record(
-            embed, sanitize_string_with_emojis
-        )
-
-        post['embed'] = embed
-
-        print(post)
-
-    yield from posts
-
-# Initialize dlt pipeline with DuckDB
-pipeline = dlt.pipeline(
-    pipeline_name="proc_test",
-    destination="duckdb",
-    dataset_name="posts"
-)
-
-# query = 'influenza'
-# start_date = "2025-03-14T00:00:00Z"
-# end_date = "2025-03-14T23:59:59Z"
-
-# Run and store data in DuckDB
-
-# pipeline.run(get_posts_adaptive_sliding_window_reverse(query, start_date, end_date), table_name = 'posts',
-#              write_disposition = "append")
+    if verbose:
+        print(load_info)
+            
+if __name__ == "__main__":
+    fire.Fire(run)

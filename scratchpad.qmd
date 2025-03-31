@@ -12,7 +12,7 @@ graph LR
     subgraph kestra 
         dlt(dlt) --- posts
         llm -- annotation --> posts
-        posts --> bqstaging[GBQ \n stage area]
+        posts --> bqstaging[<b>GBQ</b> \n stage area \n 1 table per kw]
         dlt -- housekeeping --> csv
         dlt -- case data --> csv
         subgraph cloud staging

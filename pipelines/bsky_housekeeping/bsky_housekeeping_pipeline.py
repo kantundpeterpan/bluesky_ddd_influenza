@@ -16,7 +16,7 @@ else:
     import sys
     sys.path.append(
         os.path.join(
-            os.path.dirname(__file__), '../../'
+            os.path.dirname(__file__), '../../../'
                      )
     )
     from project.bsky_tools import *
@@ -200,7 +200,7 @@ def by_day_aggregation(
     # print(df)
     # first convert the date column to datetime objects
     df[date_col] = pd.to_datetime(df[date_col])
-    return df.groupby(df[date_col].dt.date)[agg_col].agg(agg_func)
+    return df.groupby(df[date_col].dt.date)[agg_col].agg(agg_func).to_frame()
 
 def _parse_query_results(
     results: List[List[dict]],
@@ -231,6 +231,7 @@ def _parse_query_results(
             
     return res
 
+# @dlt.resource(primary_key=("period_start", "query"), write_disposition="merge")
 def bsky_housekeeping_query(
     query: str,
     start_date: str,
@@ -267,26 +268,61 @@ def bsky_housekeeping_query(
 
     
     if parsed_results.empty:
-        parsed_results = pd.Series([0], index = [start_date])
+        parsed_results = pd.DataFrame([0], index = [start_date], columns = ['post_count'])
         parsed_results.index.name = 'period_start'
-        parsed_results.name = "post_count"
+        # parsed_results.name = "post_count"
+
+    parsed_results['query'] = query
 
     if not out_file:
         out_file = f'baseline_{query}.csv'
 
     # return parsed_results
     
-    parsed_results.to_csv(out_file)
+    # parsed_results.to_csv(out_file)
+    # print(parsed_results)
+    
+    parsed_results = parsed_results.reset_index().astype({
+        'period_start': "datetime64[ns]",
+        'post_count': 'int',
+        'query': 'string'
+    })
+    
+    parsed_results['period_start'] = parsed_results.period_start.dt.date
+    
+    print(parsed_results)
+    
+    return parsed_results
     
     
+def run(
+    query: str,
+    start_date: str,
+    end_date: Optional[str] = None,
+    out_file: str = None,
+    n_jobs: int = os.cpu_count(),
+    verbose: bool = True
+):
+    # Initialize dlt pipeline
+    pipeline = dlt.pipeline(
+        pipeline_name="bsky_housekeeping",
+        destination="bigquery",
+        dataset_name="bsky_housekeeping"
+    )
+    
+    load_info = pipeline.run(
+        bsky_housekeeping_query(
+            query=query, start_date=start_date,
+            end_date = end_date, n_jobs=n_jobs
+        ),
+        table_name='housekeeping',
+        write_disposition='merge',
+        primary_key=("period_start", "query")
+    )
 
-# def main():
-#     """
-#     Main function to execute the Bluesky housekeeping query from the command line.
-#     """
-#     import fire
-#     fire.Fire(bsky_housekeeping_query)
+    if verbose:
+        print(load_info)
 
 if __name__ == '__main__':
     import fire
-    fire.Fire(bsky_housekeeping_query)
+    fire.Fire(run)

@@ -37,7 +37,8 @@ jobs:
           push: true
           tags: |
             docker.io/${{ github.repository_owner }}/bsky-housekeeping:latest
-            docker.io/${{ github.repository_owner }}/bsky-housekeeping:${{ github.sha }} # Tag with commit SHA for traceability
+            
+# docker.io/${{ github.repository_owner }}/bsky-housekeeping:${{ github.sha }} # Tag with commit SHA for traceability
 
  #     - name: Image digest
  #       run: echo "Digest: ${{ steps.build-push.outputs.digest }}"

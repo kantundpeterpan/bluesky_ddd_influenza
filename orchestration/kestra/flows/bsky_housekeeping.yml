@@ -1,0 +1,21 @@
+id: bsky_housekeeping
+namespace: digepi_zcde
+
+inputs:
+  - id: query_str
+    type: STRING
+  - id: date_str
+    type: STRING
+    
+tasks:
+  - id: clone_repository
+    type: io.kestra.plugin.scripts.shell.Commands
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+    containerImage: kantundpeterpan/digepi_bsky:latest
+    env:      
+      DESTINATION__BIGQUERY__CREDENTIALS__PROJECT_ID: "{{ secret('BIGQUERY_PROJECT_ID') }}"
+      DESTINATION__BIGQUERY__CREDENTIALS__PRIVATE_KEY: "{{ secret('BIGQUERY_PRIVATE_KEY') }}"
+      DESTINATION__BIGQUERY__CREDENTIALS__CLIENT_EMAIL: "{{ secret('BIGQUERY_CLIENT_EMAIL') }}"
+    commands:
+      - python /digepi/pipelines/bsky_housekeeping/bsky_housekeeping_pipeline.py {{inputs.query_str}} {{inputs.date_str}}

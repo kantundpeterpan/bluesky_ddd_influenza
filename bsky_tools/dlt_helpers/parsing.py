@@ -5,6 +5,8 @@ from dlt.sources.helpers.rest_client.paginators import JSONResponseCursorPaginat
 from datetime import datetime, timezone
 from datetime import timedelta
 from urllib.parse import quote_plus
+from collections import Counter
+import pandas as pd
 
 # Bluesky API Client
 bluesky_client = RESTClient(
@@ -12,13 +14,6 @@ bluesky_client = RESTClient(
     paginator=JSONResponseCursorPaginator(cursor_path="cursor", cursor_param="cursor"),
 )
 
-import logging
-
-# Configure logging
-# logging.basicConfig(
-#     filename='string_sanitizer.log',
-#     level=logging.INFO,
-#     format='%(asctime)s - %(levelname)s - %(message)s')
 
 def sanitize_string_with_emojis(input_string):
     """
@@ -95,9 +90,17 @@ def get_posts_count_adaptive_sliding_window_reverse(
         # print(posts)
         try:
             posts = posts['posts']
+            
+            #extract post languages
+            langs: list[str] = [','.join(p['record'].get('langs','')) for p in posts]
+            langs_count = Counter(langs)
+            langs = langs_count.keys()
+            no_langs: int = len(langs)
+            post_counts: list = [langs_count[l] for l in langs]
+            
         except Exception as e:
             print(e)
-            print(posts)
+            print(posts[:1])
             break
         # No results found in this window
         # that means that there are no posts between current next_date
@@ -131,9 +134,10 @@ def get_posts_count_adaptive_sliding_window_reverse(
                     earliest_post_time = post_datetime
             
         yield {
-            "period_start":earliest_post_time,
-            "period_end": next_date,
-            "post_count": posts_count
+            "period_start":[earliest_post_time]*no_langs,
+            "period_end": [next_date]*no_langs,
+            "langs": langs,
+            "post_count": post_counts
             }
         
         next_date = earliest_post_time
@@ -168,13 +172,43 @@ def create_query_params_from_date(
 
     return zip([query] * len(start_dates), start_dates, end_dates)
 
+def create_query_params(
+    query:str,
+    start_date: str,
+    end_date: str
+) -> tuple[str, str, str]:
+    """
+    Generates query parameters (query, start_date, end_date) tuples for each day
+    within the specified date range.
 
-# Fetch Posts with adaptive sliding window
-@dlt.resource(
-    # columns={"record": {"langs": "array<string>"}}
-    write_disposition='append',
-    parallelized=True
-)
+    Args:
+        query (str): The search query.
+        start_date (str): The start date for the range (YYYY-MM-DD).
+        end_date (str): The end date for the range (YYYY-MM-DD).
+
+    Returns:
+        zip: A zip object containing tuples of (query, start_date, end_date) for each day.
+    """
+    start_dates = pd.date_range(
+    start=start_date, end = end_date, tz = 'utc'
+    )
+
+    end_dates = start_dates + timedelta(
+        hours = 23, minutes = 59, seconds = 59
+    )
+
+    # Format start and end dates to strings and add the 'T' separator
+    start_dates = start_dates.astype(str).str.replace(" " , "T").to_list()
+    end_dates = end_dates.astype(str).str.replace(" " , "T").to_list()
+
+    return zip([query]*len(start_dates), start_dates, end_dates)
+
+# # Fetch Posts with adaptive sliding window
+# @dlt.resource(
+#     # columns={"record": {"langs": "array<string>"}}
+#     write_disposition='append',
+#     parallelized=True
+# )
 def get_posts_adaptive_sliding_window_reverse(query: str, start_date: str, end_date: str, limit: int = 100):
     """
     Fetches posts using an adaptive sliding window, starting each window from the earliest
@@ -255,88 +289,12 @@ def get_posts_adaptive_sliding_window_reverse(query: str, start_date: str, end_d
         # Add a small buffer to avoid duplicate entries -- subtracting to move it back
         next_date -= timedelta(microseconds=1)
 
-import pandas as pd
-import multiprocessing
-from multiprocessing import Manager
-
-def fetch_posts_for_chunk(query, start_date, end_date, queue, limit):
-    """
-    Fetches posts for a single chunk of time and puts the results in the queue.
-    """
-    posts = list(get_posts_adaptive_sliding_window_reverse(query, start_date, end_date, limit=limit))
-    queue.put(posts)
-
-@dlt.resource(
-    # columns={"record": {"langs": "array<string>"}}
-    write_disposition='append',
-    parallelized=True
-)
-def fetch_posts_multiproc(query: str, date_str: str, n_chunks: int = 4, limit: int = 100):
-    """
-    Fetches posts for a given query and date string, using multiprocessing to divide the day into chunks.
-
-    Args:
-        query (str): The search query.
-        date_str (str): The date to search for in the format YYYY-MM-DD.
-        n_chunks (int): The number of chunks to divide the day into.
-        limit (int): The maximum number of posts to retrieve per chunk.
-
-    Yields:
-        dict: Individual post dictionaries.
-    """
-    query_params = create_query_params_from_date(query, date_str, n_chunks)
-
-    manager = multiprocessing.Manager()
-    queue = manager.Queue()
-    processes = []
-
-    for q, start, end in query_params:
-        p = multiprocessing.Process(target=fetch_posts_for_chunk, args=(q, start, end, queue, limit))
-        processes.append(p)
-        p.start()
-
-    for p in processes:
-        p.join()
-
-    while not queue.empty():
-        posts = queue.get()
-        for post in posts:
-            yield post
-
-
-
-@dlt.resource
-def test_res():
-    record = {'embed':"E'Cette image est tirée de l''article de Slate cité par Laure Dasinière.\nCovid, les virus de la grippe se transmettent par voie aérosol, par ces trs fi"}
-    posts = [record]
-    for post in posts:
-        record = post.get("record", {})
-        embed = post.get("embed", {})
-        # process langs fields
-        if 'langs' in record.keys():
-            record['langs'] = ','.join(record['langs']) if record['langs'] else ''
-        else:
-            record['langs'] = ''
-        # record['text'] = sanitize_string_with_emojis(record['text'])
-        record = sanitize_strings_in_record(
-            record, sanitize_string_with_emojis
-        )
-        embed = sanitize_strings_in_record(
-            embed, sanitize_string_with_emojis
-        )
-
-        post['embed'] = embed
-
-        print(post)
-
-    yield from posts
-
 # Initialize dlt pipeline with DuckDB
-pipeline = dlt.pipeline(
-    pipeline_name="proc_test",
-    destination="duckdb",
-    dataset_name="posts"
-)
+# pipeline = dlt.pipeline(
+#     pipeline_name="proc_test",
+#     destination="duckdb",
+#     dataset_name="posts"
+# )
 
 # query = 'influenza'
 # start_date = "2025-03-14T00:00:00Z"

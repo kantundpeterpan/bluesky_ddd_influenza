@@ -5,218 +5,62 @@ from dlt.sources.helpers.rest_client.paginators import JSONResponseCursorPaginat
 from datetime import datetime, timezone
 from datetime import timedelta
 from urllib.parse import quote_plus
+from typing import Optional
 import fire
+import os
 
-# Bluesky API Client
-bluesky_client = RESTClient(
-    base_url="https://public.api.bsky.app/xrpc/",
-    paginator=JSONResponseCursorPaginator(cursor_path="cursor", cursor_param="cursor"),
-)
-
-import logging
-
-# Configure logging
-logging.basicConfig(filename='string_sanitizer.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-def sanitize_string_with_emojis(input_string):
-    """
-    Sanitizes a string for safe insertion into a database while preserving emojis.
-    - Replaces newlines with spaces.
-    - Escapes single quotes by doubling them.
-    """
-    if not isinstance(input_string, str):
-        return input_string  # Return as-is if not a string
-
-    # Replace newlines with spaces
-    # sanitized = input_string.replace("\n", " ").replace("\r", " ")
-
-    # Escape single quotes by doubling them
-    # sanitized = sanitized.replace("'", " ").replace("’", "")
-    sanitized = input_string.replace("\x00", "")
-
-    # logging.info(f"Input: {input_string}")
-    # logging.info(f"Sanitized string: {sanitized}") # Logging only a snippet
-
-    return sanitized
-
-def sanitize_strings_in_record(record, sanitize_function):
-    """
-    Recursively traverses a record (dict or list) and applies the sanitize_function to all string fields.
-    """
-    if isinstance(record, dict):
-        # Traverse dictionary
-        return {key: sanitize_strings_in_record(value, sanitize_function) for key, value in record.items()}
-    elif isinstance(record, list):
-        # Traverse list
-        return [sanitize_strings_in_record(item, sanitize_function) for item in record]
-    elif isinstance(record, str):
-        # Apply sanitization to strings
-        return sanitize_function(record)
-    else:
-        # Return other data types as-is
-        return record
-
-def create_query_params_from_date(
-    query: str,
-    date: str,
-    n_chunks: int
-) -> zip:
-    """
-    Generates query parameters (query, start_date, end_date) tuples for chunks of a single day.
-
-    Args:
-        query (str): The search query.
-        date (str): The date to chunk (YYYY-MM-DD).
-        n_chunks (int): The number of chunks to divide the day into.
-
-    Returns:
-        zip: A zip object containing tuples of (query, start_date, end_date) for each chunk.
-    """
-    start_date = pd.to_datetime(date)
-    total_seconds = 24 * 60 * 60  # Total seconds in a day
-    chunk_seconds = total_seconds / n_chunks
-
-    start_dates = [start_date + timedelta(seconds=i * chunk_seconds) for i in range(n_chunks)]
-    end_dates = [start_date + timedelta(seconds=(i + 1) * chunk_seconds - 1) for i in range(n_chunks)]
-
-    # Format start and end dates to strings and add the 'T' separator
-    start_dates = [dt.strftime('%Y-%m-%dT%H:%M:%S+00:00') for dt in start_dates]
-    end_dates = [dt.strftime('%Y-%m-%dT%H:%M:%S+00:00') for dt in end_dates]
-
-    return zip([query] * len(start_dates), start_dates, end_dates)
-
-
-# Fetch Posts with adaptive sliding window
-@dlt.resource(
-    # columns={"record": {"langs": "array<string>"}}
-    write_disposition='append',
-    parallelized=True
-)
-def get_posts_adaptive_sliding_window_reverse(query: str, start_date: str, end_date: str, limit: int = 100):
-    """
-    Fetches posts using an adaptive sliding window, starting each window from the earliest
-    post time of the previous window, given that the API returns recent posts first.
-    Ensures all datetime objects are timezone-aware and in UTC.
-    """
-    next_date = datetime.fromisoformat(end_date.replace("Z", "+00:00")).astimezone(
-        timezone.utc)  # Ensure UTC
-    start_date_dt = datetime.fromisoformat(start_date.replace("Z", "+00:00")).astimezone(
-        timezone.utc)  # Ensure UTC
-
-    while next_date > start_date_dt:
-        # Format dates for the API
-        until_str = next_date.isoformat().replace("+00:00", "Z")
-        encoded_query = quote_plus(query)
-
-        params = {
-            "q": encoded_query,
-            "until": until_str,
-            "since": start_date,  # Fetch until the overall start date, for each query the start date is a fixed value
-            "limit": limit,
-        }
-
-        posts = bluesky_client.get(  # Explicitly using GET
-            "app.bsky.feed.searchPosts",
-            params=params
-        ).json()['posts']
-
-        # No results found in this window
-        # that means that there are no posts between current next_date
-        # and start_date, which means there no posts left to retrieve
-        if not posts:
-            print('no posts retrieved')
-            break
-            # next_date -= timedelta(days=1)
-            # if next_date < start_date_dt:
-            #     break
-            # continue  # Skip yielding and go to the next iteration
-
-        # Update next_date based on the earliest post in the current window
-        # do some string sanitization
-        earliest_post_time = None
-        for post in posts:
-            record = post.get("record", {})
-            embed = post.get("embed", {})
-            # process langs fields
-            if 'langs' in record.keys():
-                record['langs'] = ','.join(record['langs']) if record['langs'] else ''
-            else:
-                record['langs'] = ''
-            # record['text'] = sanitize_string_with_emojis(record['text'])
-            if record:
-                post['record'] = sanitize_strings_in_record(
-                    record, sanitize_string_with_emojis
-                )
-            if embed:
-                post['embed'] = sanitize_strings_in_record(
-                    embed, sanitize_string_with_emojis
-                )
-            created_at = record.get("createdAt")
-            if created_at:
-                post_datetime = datetime.fromisoformat(created_at.replace("Z", "+00:00")).astimezone(
-                    timezone.utc)  # Ensure UTC
-
-                if earliest_post_time is None or post_datetime < earliest_post_time:
-                    earliest_post_time = post_datetime
-
-            yield post #from posts
-
-        if earliest_post_time:
-            next_date = earliest_post_time
-        else:
-            print("no earliest post date determined")
-            next_date -= timedelta(days=1)
-            if next_date < start_date_dt:
-                break
-
-        # Add a small buffer to avoid duplicate entries -- subtracting to move it back
-        next_date -= timedelta(microseconds=1)
+if __name__ != '__main__':
+    from ...bsky_tools.dlt_helpers import *
+else:
+    import sys
+    sys.path.append(
+        os.path.join(
+            os.path.dirname(__file__), '../../../'
+                     )
+    )
+    from project.bsky_tools.dlt_helpers.parsing import *
+    from project.bsky_tools.dlt_helpers.multicore_runners import pool_func_posts, _run_query_pool
 
 import pandas as pd
 import multiprocessing
 from multiprocessing import Manager
 
-def fetch_posts_for_chunk(query, start_date, end_date, queue, limit):
-    """
-    Fetches posts for a single chunk of time and puts the results in the queue.
-    """
-    posts = list(get_posts_adaptive_sliding_window_reverse(query, start_date, end_date, limit=limit))
-    queue.put(posts)
-
 @dlt.resource(primary_key=("uri"), write_disposition="merge")
-def fetch_posts_multiproc(query: str, date_str: str, n_chunks: int = 4, limit: int = 100):
-    """
-    Fetches posts for a given query and date string, using multiprocessing to divide the day into chunks.
+def fetch_posts(
+    query: str,
+    start_date: str,
+    end_date: Optional[str] = None,
+    out_file: str = None,
+    n_jobs: int = os.cpu_count(),
+    verbose: bool = True
+):
+    
+    if end_date:
+        query_params = create_query_params(query, start_date, end_date)
 
-    Args:
-        query (str): The search query.
-        date_str (str): The date to search for in the format YYYY-MM-DD.
-        n_chunks (int): The number of chunks to divide the day into.
-        limit (int): The maximum number of posts to retrieve per chunk.
+    else:
+        query_params = create_query_params_from_date(query, start_date, n_chunks=n_jobs)
+    
+    # Unzip the query_params to get separate lists for query, start_date, and end_date
+    unzipped_params = list(zip(*query_params))
 
-    Yields:
-        dict: Individual post dictionaries.
-    """
-    query_params = create_query_params_from_date(query, date_str, n_chunks)
+    # Run the query pool with the unzipped parameters
+    query_results = _run_query_pool(
+        zip(*unzipped_params),
+        pool_func=pool_func_posts,
+        yield_flag=True
+    )
+    
+    yield from query_results
 
-    manager = multiprocessing.Manager()
-    queue = manager.Queue()
-    processes = []
-
-    for q, start, end in query_params:
-        p = multiprocessing.Process(target=fetch_posts_for_chunk, args=(q, start, end, queue, limit))
-        processes.append(p)
-        p.start()
-
-    for p in processes:
-        p.join()
-
-    while not queue.empty():
-        posts = queue.get()
-        for post in posts:
-            yield post
-
-def run(query: str, date: str, verbose: bool = True):
+def run(
+    query: str,
+    start_date: str,
+    end_date: Optional[str] = None,
+    out_file: str = None,
+    n_jobs: int = os.cpu_count(),
+    verbose: bool = True
+):
     
     # Initialize dlt pipeline
     pipeline = dlt.pipeline(
@@ -226,11 +70,19 @@ def run(query: str, date: str, verbose: bool = True):
     )
     
     load_info = pipeline.run(
-        fetch_posts_multiproc(
-            query=query, date_str=date, n_chunks=1
+        fetch_posts(
+            query=query, start_date_str=date,
+            end_date = end_date, n_jobs=n_jobs
         ),
         table_name=query
     )
+    
+    # load_info = pipeline.run(
+    #     fetch_posts_multiproc(
+    #         query=query, date_str=date, n_chunks=1
+    #     ),
+    #     table_name=query
+    # )
 
     if verbose:
         print(load_info)

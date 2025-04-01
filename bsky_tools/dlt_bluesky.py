@@ -5,6 +5,7 @@ from dlt.sources.helpers.rest_client.paginators import JSONResponseCursorPaginat
 from datetime import datetime, timezone
 from datetime import timedelta
 from urllib.parse import quote_plus
+from collections import Counter
 
 # Bluesky API Client
 bluesky_client = RESTClient(
@@ -95,9 +96,17 @@ def get_posts_count_adaptive_sliding_window_reverse(
         # print(posts)
         try:
             posts = posts['posts']
+            
+            #extract post languages
+            langs: list[str] = [','.join(p['record'].get('langs','')) for p in posts]
+            langs_count = Counter(langs)
+            langs = langs_count.keys()
+            no_langs: int = len(langs)
+            post_counts: list = [langs_count[l] for l in langs]
+            
         except Exception as e:
             print(e)
-            print(posts)
+            print(posts[:1])
             break
         # No results found in this window
         # that means that there are no posts between current next_date
@@ -131,9 +140,10 @@ def get_posts_count_adaptive_sliding_window_reverse(
                     earliest_post_time = post_datetime
             
         yield {
-            "period_start":earliest_post_time,
-            "period_end": next_date,
-            "post_count": posts_count
+            "period_start":[earliest_post_time]*no_langs,
+            "period_end": [next_date]*no_langs,
+            "langs": langs,
+            "post_count": post_counts
             }
         
         next_date = earliest_post_time

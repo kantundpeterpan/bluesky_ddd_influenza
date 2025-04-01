@@ -200,7 +200,8 @@ def by_day_aggregation(
     # print(df)
     # first convert the date column to datetime objects
     df[date_col] = pd.to_datetime(df[date_col])
-    return df.groupby(df[date_col].dt.date)[agg_col].agg(agg_func).to_frame()
+    return df.groupby([df[date_col].dt.date,'langs'])[agg_col].agg(agg_func)
+
 
 def _parse_query_results(
     results: List[List[dict]],
@@ -219,15 +220,17 @@ def _parse_query_results(
     """
 
     # flatten the result list and create a DataFrame
-    res = pd.DataFrame.from_records(
-        [e for entry in results for e in entry],
-        columns=['period_start', 'post_count']
-        )
+    # res = pd.DataFrame.from_records(
+    #     [e for entry in results for e in entry],
+    #     columns=['period_start', 'post_count']
+    #     )
+
+    res = pd.concat([pd.DataFrame.from_dict(rr) for r in results for rr in r])
 
     if agg_func:
         res = agg_func(res, **agg_kwargs)
         if res.empty:
-            res = pd.DataFrame(columns=['period_start', 'post_count'])
+            res = pd.DataFrame(columns=['period_start', 'langs', 'post_count'])
             
     return res
 
@@ -264,13 +267,14 @@ def bsky_housekeeping_query(
     # Run the query pool with the unzipped parameters
     query_results = _run_query_pool(zip(*unzipped_params))
 
-    parsed_results = _parse_query_results(query_results)
+    parsed_results = _parse_query_results(query_results).to_frame()
 
-    
     if parsed_results.empty:
         parsed_results = pd.DataFrame([0], index = [start_date], columns = ['post_count'])
         parsed_results.index.name = 'period_start'
         # parsed_results.name = "post_count"
+
+    # return parsed_results
 
     parsed_results['query'] = query
 

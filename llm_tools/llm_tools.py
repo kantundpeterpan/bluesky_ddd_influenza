@@ -47,7 +47,7 @@ class SymptomExtractor():
         self,
         param_tuples: List[tuple],
         # pool_func: Callable = pool_func,
-        n_cpus: int = os.cpu_count()
+        n_jobs: int = os.cpu_count()
     ) -> List[List[dict]]:
         """
         Executes the given function in parallel using a multiprocessing pool,
@@ -75,7 +75,7 @@ class SymptomExtractor():
                 count = 0
                 while count < total:
                     try:
-                        queue.get(timeout=1)  # Set a timeout
+                        queue.get()  # Set a timeout
                         progress_bar.update(1)
                         count += 1
                     except Exception as e: # queue.Empty:
@@ -93,7 +93,7 @@ class SymptomExtractor():
 
         # Create and start worker processes
         processes = []
-        for _ in range(n_cpus):
+        for _ in range(n_jobs):
             p = Process(target=self._pool_func, args=(task_queue, progress_queue, result_queue))
             p.start()
             processes.append(p)
@@ -101,12 +101,12 @@ class SymptomExtractor():
         [task_queue.put(task) for task in tasks]
 
         # Signal the workers to terminate
-        for _ in range(n_cpus):
+        for _ in range(n_jobs):
             task_queue.put(None)
 
         # Wait for all tasks to be completed by each of the child processes
         for p in processes:
-            p.join(timeout = 10)
+            p.join()
         # It is important to join all processes before proceeding
 
         progress_queue.put(None)
@@ -138,8 +138,8 @@ class SymptomExtractor():
         
         return response
     
-    def multi_extract(self, msgs: Iterable, n_cpus: int = os.cpu_count()):
+    def multi_extract(self, msgs: Iterable, n_jobs: int = os.cpu_count()):
         
-        self.results = self._run_extraction_pool(n_cpus=n_cpus, param_tuples=msgs)
+        self.results = self._run_extraction_pool(n_jobs=n_jobs, param_tuples=msgs)
         self.resdf = pd.DataFrame.from_records(self.results)
         

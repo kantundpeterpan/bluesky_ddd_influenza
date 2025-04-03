@@ -1,3 +1,10 @@
+---
+format:
+  gfm:
+    output-ext: "md"
+    output-file: "README"
+---
+
 # TODOs
 
 ## Official data

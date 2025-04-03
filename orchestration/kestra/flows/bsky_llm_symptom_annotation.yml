@@ -39,4 +39,4 @@ tasks:
           DESTINATION__BIGQUERY__CREDENTIALS__CLIENT_EMAIL: "{{ secret('BIGQUERY_CLIENT_EMAIL') }}"
           DESTINATION__BIGQUERY__LOCATION: "europe-west1"
         commands:
-          - python /project/pipelines/llm_sypmtoms/llm_symptoms_pipeline.py {{taskrun.value}} 
+          - python /project/pipelines/llm_sypmtoms/llm_symptoms_pipeline.py {{taskrun.value}}

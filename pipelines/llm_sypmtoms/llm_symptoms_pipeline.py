@@ -39,7 +39,12 @@ def run(
     )
 
     # Construct the SQL query to fetch records from BigQuery.
-    sql_query = f"SELECT uri, record__text FROM {query_kw} WHERE record__langs LIKE '{language}'"
+    sql_query = f"""SELECT uri, record__text 
+    FROM {query_kw} 
+    WHERE record__langs LIKE '{language}' AND
+    uri NOT IN (
+        SELECT uri FROM llm_hints
+        )"""
 
     # Limit the query if it's a test run.
     if is_test:
@@ -58,6 +63,10 @@ def run(
 
     # Print the shape of the DataFrame.
     print(df.shape)
+
+    if df.empty:
+        print("No messages to label")
+        return
 
     # Extract the symptoms using the SymptomExtractor.
     se.multi_extract([*zip(df['uri'], df['record__text'])])

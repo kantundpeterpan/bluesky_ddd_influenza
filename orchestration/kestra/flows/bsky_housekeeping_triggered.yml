@@ -1,0 +1,56 @@
+id: bsky_housekeeping_triggered
+namespace: digepi_zcde
+
+inputs:
+  - id: query_str
+    type: ARRAY
+    itemType: STRING
+    required: true
+    defaults:
+      - voiture
+      - demain
+      - travail
+      - grippe
+      - rhume
+      - fievre
+  # - id: start_date_str
+  #   type: STRING
+  - id: end_date_str
+    type: STRING
+    required: false
+
+tasks:
+  - id: log_query_date
+    type: io.kestra.plugin.core.debug.Return
+    description: "Some tasks **documentation** in *Markdown*"
+    format: "A log line content with a contextual date variable {{ trigger.date | dateAdd(-1, 'DAYS') | date('yyyy-MM-dd') }}"
+
+
+  - id: 1_foreach
+    type: io.kestra.plugin.core.flow.ForEach
+    values: "{{inputs.query_str}}"
+    tasks:
+      - id: bsky_housekeeping_query
+        type: io.kestra.plugin.scripts.shell.Commands
+        commands:
+          - python /project/pipelines/bsky_housekeeping/bsky_housekeeping_pipeline.py {{taskrun.value}} {{ trigger.date | dateAdd(-1, 'DAYS') | date('yyyy-MM-dd') }} {{inputs.end_date_str}}
+        containerImage: kantundpeterpan/digepi_bsky:latest
+        env:
+          DESTINATION__BIGQUERY__CREDENTIALS__CLIENT_EMAIL: "{{ secret('BIGQUERY_CLIENT_EMAIL') }}"
+          DESTINATION__BIGQUERY__CREDENTIALS__PRIVATE_KEY: "{{ secret('BIGQUERY_PRIVATE_KEY') }}"
+          DESTINATION__BIGQUERY__CREDENTIALS__PROJECT_ID: "{{ secret('BIGQUERY_PROJECT_ID') }}"
+          DESTINATION__BIGQUERY__LOCATION: europe-west1
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+          pullPolicy: ALWAYS
+
+pluginDefaults:
+  - type: io.kestra.plugin.core.log.Log
+    values:
+      level: INFO
+
+triggers:
+  - id: daily_midnight
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 4 * * *" # Runs daily at 4am Paris time
+    timezone: Europe/Paris # Adjust timezone  

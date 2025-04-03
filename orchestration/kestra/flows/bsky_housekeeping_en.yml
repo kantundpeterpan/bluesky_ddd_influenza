@@ -1,4 +1,4 @@
-id: bsky_housekeeping
+id: bsky_housekeeping_en
 namespace: digepi_zcde
 
 inputs:
@@ -7,12 +7,11 @@ inputs:
     itemType: STRING
     required: true
     defaults:
-      - voiture
-      - demain
-      - travail
-      - grippe
-      - rhume
-      - fievre
+      - car
+      - tomorrow
+      - work
+      - flu
+      - fever
   
   - id: start_date_str
     type: STRING
@@ -34,11 +33,7 @@ tasks:
     tasks:
       - id: bsky_housekeeping_query
         type: io.kestra.plugin.scripts.shell.Commands
-        timeout: PT8M
-        retry:
-          type: constant
-          maxAttempt: 3
-          interval: PT10S
+        timeout: PT7M
         taskRunner:
           type: io.kestra.plugin.scripts.runner.docker.Docker
           pullPolicy: ALWAYS

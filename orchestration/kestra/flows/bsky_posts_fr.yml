@@ -1,4 +1,4 @@
-id: bsky_housekeeping
+id: bsky_posts_fr
 namespace: digepi_zcde
 
 inputs:
@@ -7,9 +7,6 @@ inputs:
     itemType: STRING
     required: true
     defaults:
-      - voiture
-      - demain
-      - travail
       - grippe
       - rhume
       - fievre
@@ -32,13 +29,8 @@ tasks:
     type: io.kestra.plugin.core.flow.ForEach
     values: "{{inputs.query_str}}"
     tasks:
-      - id: bsky_housekeeping_query
+      - id: bsky_posts_query
         type: io.kestra.plugin.scripts.shell.Commands
-        timeout: PT8M
-        retry:
-          type: constant
-          maxAttempt: 3
-          interval: PT10S
         taskRunner:
           type: io.kestra.plugin.scripts.runner.docker.Docker
           pullPolicy: ALWAYS
@@ -49,6 +41,6 @@ tasks:
           DESTINATION__BIGQUERY__CREDENTIALS__CLIENT_EMAIL: "{{ secret('BIGQUERY_CLIENT_EMAIL') }}"
           DESTINATION__BIGQUERY__LOCATION: "europe-west1"
         commands:
-          - python /project/pipelines/bsky_housekeeping/bsky_housekeeping_pipeline.py {{taskrun.value}} {{inputs.start_date_str}} {{inputs.end_date_str}}
+          - python /project/pipelines/bsky_posts/bsky_post_pipeline.py {{taskrun.value}} {{inputs.start_date_str}} {{inputs.end_date_str}}
           
   #  inputs.up_to_today ? now() | date("yyyy-MM-dd") : inputs.end_date_str }}

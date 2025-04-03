@@ -8,6 +8,13 @@ from urllib.parse import quote_plus
 from typing import Optional
 import fire
 import os
+import logging
+
+# Create a logger
+logger = logging.getLogger('dlt')
+# Set the log level
+logger.setLevel(logging.INFO)
+    
 
 if __name__ != '__main__':
     from ...bsky_tools.dlt_helpers import *
@@ -69,11 +76,15 @@ def run(
         dataset_name="bsky_posts"
     )
     
-    load_info = pipeline.run(
-        fetch_posts(
+    data = fetch_posts(
             query = query, start_date = start_date,
             end_date = end_date, n_jobs=n_jobs
-        ),
+        )
+    
+    print("Start data pipeline ... ")
+    
+    load_info = pipeline.run(
+        data,
         table_name=query
     )
     
@@ -88,4 +99,5 @@ def run(
         print(load_info)
             
 if __name__ == "__main__":
+    
     fire.Fire(run)

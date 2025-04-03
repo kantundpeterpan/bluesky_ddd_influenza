@@ -133,7 +133,7 @@ class SymptomExtractor():
                     messages
                 )
         
-        response['cid'] = msg_id
+        response['uri'] = msg_id
         
         return response
     

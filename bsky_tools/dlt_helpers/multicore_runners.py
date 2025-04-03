@@ -1,3 +1,6 @@
+from multiprocessing import set_start_method
+set_start_method("spawn", True)
+
 import os
 import threading
 from multiprocessing import Process, Manager
@@ -79,7 +82,7 @@ def _run_query_pool(
             count = 0
             while count < total:
                 try:
-                    queue.get(timeout=1)  # Set a timeout
+                    queue.get()  # Set a timeout
                     progress_bar.update(1)
                     count += 1
                 except Exception as e: # queue.Empty:
@@ -109,7 +112,8 @@ def _run_query_pool(
        task_queue.put(None)
 
     # Wait for all tasks to be completed by each of the child processes
-    for p in processes:
+    for i,p in enumerate(processes):
+        # print(f"Process")
         p.join()
     # It is important to join all processes before proceeding
 

@@ -44,11 +44,12 @@ def run(
     WHERE record__langs LIKE '{language}' AND
     uri NOT IN (
         SELECT uri FROM llm_hints
-        )"""
+        )
+    """
 
     # Limit the query if it's a test run.
     if is_test:
-        sql_query += " LIMIT 100"
+        sql_query += f" LIMIT {max_test_records}"
     
     # Execute the query and fetch the data into a Pandas DataFrame.
     with pipeline.sql_client() as client:

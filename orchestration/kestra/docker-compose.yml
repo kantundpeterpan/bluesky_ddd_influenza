@@ -38,7 +38,7 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=catsarecool
     ports:
       - "127.0.0.1:8083:80"
-      - "6768:6768"
+      - "6768:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
 

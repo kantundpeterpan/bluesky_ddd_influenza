@@ -11,6 +11,11 @@ inputs:
       - rhume
       - fievre
 
+  - id: is_test
+    type: BOOLEAN
+    defaults: false
+    required: true
+
 tasks:
   - id: 1_foreach
     type: io.kestra.plugin.core.flow.ForEach
@@ -34,4 +39,4 @@ tasks:
           DESTINATION__BIGQUERY__CREDENTIALS__CLIENT_EMAIL: "{{ secret('BIGQUERY_CLIENT_EMAIL') }}"
           DESTINATION__BIGQUERY__LOCATION: "europe-west1"
         commands:
-          - python /project/pipelines/llm_sypmtoms/llm_symptoms_pipeline.py {{taskrun.value}} --is_test True
+          - python /project/pipelines/llm_sypmtoms/llm_symptoms_pipeline.py {{taskrun.value}} 

@@ -71,7 +71,7 @@ def run(
     
     load_info = pipeline.run(
         fetch_posts(
-            query=query, start_date_str=date,
+            query = query, start_date = start_date,
             end_date = end_date, n_jobs=n_jobs
         ),
         table_name=query

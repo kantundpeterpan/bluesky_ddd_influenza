@@ -1,5 +1,5 @@
 from multiprocessing import set_start_method
-set_start_method("spawn", True)
+# set_start_method("forkserver", True)
 
 import os
 import threading
@@ -31,6 +31,8 @@ def pool_func_posts(task_queue, progress_queue, result_queue):
             progress_queue.put(1) # Signal to move to next task (or end threads)
         # task_queue.task_done()  # Signal that the task is done here -> IMPORTANT
 
+import logging
+
 def pool_func_post_count(task_queue, progress_queue, result_queue):
     """Worker function for the process pool."""
     while True:
@@ -45,8 +47,13 @@ def pool_func_post_count(task_queue, progress_queue, result_queue):
             result_queue.put(result)
             
         except Exception as e:
-            print(f"Error processing task: {task}, error: {e}")
+            log_file_name = f"{query}_{start_date}_{end_date}.log"
+            logging.basicConfig(filename=log_file_name, level=logging.ERROR,
+                                format='%(asctime)s - %(levelname)s - %(message)s')
+            error_message = f"Error processing task: {task}, error: {e}"
+            logging.exception(error_message) # Log the entire exception, including stack trace
             result = []  # Or handle the error as needed
+            result_queue.put(result)
             progress_queue.put(1) # Signal to move to next task (or end threads)
         # task_queue.task_done()  # Signal that the task is done here -> IMPORTANT
         
@@ -112,9 +119,11 @@ def _run_query_pool(
        task_queue.put(None)
 
     # Wait for all tasks to be completed by each of the child processes
-    for i,p in enumerate(processes):
-        # print(f"Process")
-        p.join()
+    while any([p.is_alive() for p in processes]):
+        for i,p in enumerate(processes):
+            p.join(timeout=5)
+            if p.is_alive():
+                print(f"Process {i} - alive")
     # It is important to join all processes before proceeding
 
     progress_queue.put(None)

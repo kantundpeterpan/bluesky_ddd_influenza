@@ -1,3 +1,12 @@
-private_key: "BIGQUERY_PRIVATE_KEY"
-project_id: "BIGQUERY_PROJECT_ID"
-client_email: "BIGQUERY_CLIENT_EMAIL"
+files:
+  google_cloud: "../../.gc_creds/digepizcde-71333237bf40.json"
+  misc: "./misc.json"
+
+google_cloud:
+    private_key: "BIGQUERY_PRIVATE_KEY"
+    project_id: "BIGQUERY_PROJECT_ID"
+    client_email: "BIGQUERY_CLIENT_EMAIL"
+
+misc:
+  GITHUB_ACCESS_TOKEN: "GITHUB_ACCESS_TOKEN"
+  OPENROUTER_API_KEY: "OPENROUTER_API_KEY"

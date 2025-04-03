@@ -38,12 +38,13 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=catsarecool
     ports:
       - "127.0.0.1:8083:80"
+      - "6768:6768"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
 
   kestra:
     image: kestra/kestra:latest
-    pull_policy: always
+    pull_policy: never
     user: "root"
     command: server standalone
     volumes:

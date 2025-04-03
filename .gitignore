@@ -7,3 +7,4 @@ byd_twitter_ddd_files
 __pycache__
 */string_sanitizer.log
 .env_encoded
+misc.json

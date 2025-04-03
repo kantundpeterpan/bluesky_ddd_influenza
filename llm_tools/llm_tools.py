@@ -1,4 +1,4 @@
-from utils import ChatOpenRouter
+from ..utils import ChatOpenRouter
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from typing import TypedDict, Annotated, List, Iterable
 from multiprocessing import Pool, Queue, Process, Manager
@@ -6,6 +6,7 @@ import threading
 from tqdm import tqdm  # For the progress bar
 from pathlib import Path
 import os
+import pandas as pd
 
 llm_tool_dir = Path(__file__).parent
 
@@ -87,7 +88,7 @@ class SymptomExtractor():
         progress_thread = threading.Thread(
             target=progress_updater, args=(progress_queue, total_tasks)
         )
-        progress_thread.daemon = True  # Thread will exit when the main program exits
+        # progress_thread.daemon = True  # Thread will exit when the main program exits
         progress_thread.start()
 
         # Create and start worker processes
@@ -105,7 +106,7 @@ class SymptomExtractor():
 
         # Wait for all tasks to be completed by each of the child processes
         for p in processes:
-            p.join()
+            p.join(timeout = 10)
         # It is important to join all processes before proceeding
 
         progress_queue.put(None)

@@ -23,7 +23,8 @@ Analyze the following tweet-like message to determine if it describes the user's
 4. For ILI-Related messages:
    - Extract symptoms using exact wording from text
    - Note symptom duration if mentioned
-   - Flag severity indicators: "difficulty breathing", "chest pain", "persistent vomiting"
+
+5. DO NOT classify "flu" AS A SYMPTOM by itself 
 
 **Response Format:**
 {
@@ -39,7 +40,7 @@ Analyze the following tweet-like message to determine if it describes the user's
 {
   "PersonalExperience": "Yes",
   "Classification": "ILI-Related",
-  "Symptoms": ["102°F fever", "nasty cough", "body aches"],
+  "Symptoms": ["fever", "nasty cough", "body aches"],
   "Duration": "2 days",
   "SeverityFlags": []
 }

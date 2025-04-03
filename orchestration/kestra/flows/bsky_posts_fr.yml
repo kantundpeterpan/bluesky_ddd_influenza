@@ -10,8 +10,8 @@ inputs:
       - grippe
       - rhume
       - fievre
-      - courbatures
-  
+      - courbature
+        
   - id: start_date_str
     type: STRING
     required: true
@@ -20,7 +20,7 @@ inputs:
   - id: end_date_str
     type: STRING
     required: false
-    defaults: "2025"
+    defaults: "2025-04-02"
 
   - id: up_to_today
     type: BOOLEAN

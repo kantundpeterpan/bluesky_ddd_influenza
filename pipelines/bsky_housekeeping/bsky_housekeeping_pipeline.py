@@ -60,9 +60,9 @@ def _parse_query_results(
     Returns:
         pd.DataFrame: A DataFrame containing the parsed query results, optionally aggregated.
     """
-
+    
     res = pd.concat([pd.DataFrame.from_dict(rr) for r in results for rr in r])
-
+    
     if agg_func:
         res = agg_func(res, **agg_kwargs)
         if res.empty:
@@ -107,6 +107,9 @@ def bsky_housekeeping_query(
         yield_flag=False
     )
     
+    # No messages found for query
+    if all([not r for r in query_results]):
+        return None
     # print(query_results)
 
     parsed_results = _parse_query_results(query_results).to_frame()
@@ -156,18 +159,25 @@ def run(
         dataset_name="bsky_housekeeping"
     )
     
-    load_info = pipeline.run(
-        bsky_housekeeping_query(
+    results_df = bsky_housekeeping_query(
             query=query, start_date=start_date,
             end_date = end_date, n_jobs=n_jobs
-        ),
-        table_name='housekeeping',
-        write_disposition='merge',
-        primary_key=("period_start", "langs", "query")
-    )
+        )
+    
+    if results_df is not None:
+    
+        load_info = pipeline.run(
+            results_df,
+            table_name='housekeeping',
+            write_disposition='merge',
+            primary_key=("period_start", "langs", "query")
+        )
 
-    if verbose:
-        print(load_info)
+        if verbose:
+            print(load_info)
+            
+    else:
+        print("No results for query")
 
 if __name__ == '__main__':
     import fire

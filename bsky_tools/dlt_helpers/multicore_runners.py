@@ -32,6 +32,7 @@ def pool_func_posts(task_queue, progress_queue, result_queue):
         # task_queue.task_done()  # Signal that the task is done here -> IMPORTANT
 
 import logging
+import random
 
 def pool_func_post_count(task_queue, progress_queue, result_queue):
     """Worker function for the process pool."""
@@ -118,14 +119,15 @@ def _run_query_pool(
     for _ in range(n_cpus):
        task_queue.put(None)
 
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    
     # Wait for all tasks to be completed by each of the child processes
     while any([p.is_alive() for p in processes]):
         for i,p in enumerate(processes):
-            p.join(timeout=5)
+            p.join()
             if p.is_alive():
-                print(f"Process {i} - alive")
-    # It is important to join all processes before proceeding
-
+                logging.info(f"Process {i} - alive")
+                
     progress_queue.put(None)
     # Signal all jobs processed
     # progress_queue.put("DONE")

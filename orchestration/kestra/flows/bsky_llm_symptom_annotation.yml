@@ -1,0 +1,37 @@
+id: bsky_llm_symptom_annotation
+namespace: digepi_zcde
+
+inputs:
+  - id: query_str
+    type: ARRAY
+    itemType: STRING
+    required: true
+    defaults:
+      - grippe
+      - rhume
+      - fievre
+
+tasks:
+  - id: 1_foreach
+    type: io.kestra.plugin.core.flow.ForEach
+    values: "{{inputs.query_str}}"
+    tasks:
+      - id: bsky_llm_symptom_annotation
+        type: io.kestra.plugin.scripts.shell.Commands
+        timeout: PT8M
+        retry:
+          type: constant
+          maxAttempt: 3
+          interval: PT10S
+        taskRunner:
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+          pullPolicy: ALWAYS
+        containerImage: kantundpeterpan/digepi_bsky:latest
+        env:
+          OPENROUTER_API_KEY: "{{ secret('OPENROUTER_API_KEY') }}"
+          DESTINATION__BIGQUERY__CREDENTIALS__PROJECT_ID: "{{ secret('BIGQUERY_PROJECT_ID') }}"
+          DESTINATION__BIGQUERY__CREDENTIALS__PRIVATE_KEY: "{{ secret('BIGQUERY_PRIVATE_KEY') }}"
+          DESTINATION__BIGQUERY__CREDENTIALS__CLIENT_EMAIL: "{{ secret('BIGQUERY_CLIENT_EMAIL') }}"
+          DESTINATION__BIGQUERY__LOCATION: "europe-west1"
+        commands:
+          - python /project/pipelines/llm_sypmtoms/llm_symptoms_pipeline.py {{taskrun.value}} --is_test True

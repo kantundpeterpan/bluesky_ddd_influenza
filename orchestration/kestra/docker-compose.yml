@@ -42,7 +42,7 @@ services:
       - pgadmin_data:/var/lib/pgadmin
 
   kestra:
-    image: kestra/kestra:v0.20.7
+    image: kestra/kestra:latest
     pull_policy: always
     user: "root"
     command: server standalone

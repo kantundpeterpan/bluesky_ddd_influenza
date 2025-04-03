@@ -24,6 +24,7 @@ def pool_func_posts(task_queue, progress_queue, result_queue):
         except Exception as e:
             print(f"Error processing task: {task}, error: {e}")
             result = []  # Or handle the error as needed
+            result_queue.put(result)
             progress_queue.put(1) # Signal to move to next task (or end threads)
         # task_queue.task_done()  # Signal that the task is done here -> IMPORTANT
 

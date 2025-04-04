@@ -14,23 +14,34 @@
 graph LR
     subgraph kestra 
         dlt(dlt) --- posts
-        llm -- annotation --> posts
+        llm --- bqstaging
+        llm -- annotation --> bqstaging
         posts --> bqstaging[<b>GBQ</b> \n stage area \n 1 table per kw]
-        dlt -- housekeeping --> csv
-        dlt -- case data --> csv
-        subgraph cloud staging
+        dlt -- housekeeping --> count
+        dlt -- case data --> who_tables
+        dlt -- case data --> cdc_tables
+        subgraph BigQuery data lake
           bqstaging
-          csv[<b>csv seeds</b> \n GCS bucket \n or Drive]
+          who_tables
+          cdc_tables
+          count[post counts table]
         end
         bqstaging --- dbt
-        csv --- dbt
+        who_tables --- dbt
+        cdc_tables --- dbt
+        count --- dbt
         dbt --> bq[Google \n BigQuery]
+        subgraph BigQuery data warehoue
+          bq
+        end
     end
 
     bsky[bsky API] --> dlt
     WHO --> dlt
     CDC --> dlt
     bq --> looker[Looker studio \n dashboard]
+    bq -- python --> stat1[Statistical analysis]
+    bq -- python --> stat2[Machine learning, modeling]
 ```
 
 - modeling as batch processing pipeline

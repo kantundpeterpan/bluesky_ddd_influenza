@@ -10,6 +10,7 @@ inputs:
       - grippe
       - rhume
       - fievre
+      - courbature
 
   - id: is_test
     type: BOOLEAN

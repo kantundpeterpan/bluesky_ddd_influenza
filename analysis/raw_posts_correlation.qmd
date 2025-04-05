@@ -1,0 +1,126 @@
+```{python}
+#| label: imports
+#| echo: false
+#| output: false
+from google.oauth2 import service_account
+import pandas as pd
+import matplotlib.pyplot as plt
+import pandas_gbq
+credentials = service_account.Credentials.from_service_account_file(
+    '../.gc_creds/digepizcde-71333237bf40.json')
+```
+
+```{python}
+#| label: sql_raw_post counts
+#| output: false
+
+who_subset = 'fluid'
+
+lang = 'fr'
+country_code = "FRA"
+
+ili_kws = [
+    'grippe', 'rhume', 'fievre', 'courbature'
+]
+ili_kws_sql = [f"'{x}'" for x in ili_kws]
+
+raw_ili_sql =f"""WITH ili_fr AS
+  (
+    SELECT DATE_TRUNC(period_start, ISOWEEK) as iso_weekstartdate, SUM(post_count) as post_count, 
+    FROM `digepizcde.bsky_housekeeping.housekeeping` 
+    WHERE query IN ({",".join(ili_kws_sql)}) and langs LIKE '%{lang}%'
+    GROUP BY 1
+    ORDER BY 1
+  ),
+who_ili_fr AS (
+  SELECT
+    iso_weekstartdate,
+    ili_case,
+    ili_outpatients
+  FROM `digepizcde.case_data.who_{who_subset}`
+  WHERE country_code='{country_code}'
+)
+
+SELECT
+  w.iso_weekstartdate as date,
+  i.post_count,
+  w.ili_case
+FROM who_ili_fr w
+LEFT JOIN ili_fr i
+ON w.iso_weekstartdate = i.iso_weekstartdate
+WHERE w.iso_weekstartdate > '2023-08-01'
+"""
+```
+
+```{python}
+#| echo: false
+#| output: false
+raw_ili_df = pandas_gbq.read_gbq(
+    raw_ili_sql, credentials=credentials
+).set_index('date')
+raw_ili_df.index = pd.to_datetime(raw_ili_df.index)
+```
+
+```{python}
+control_kws = ['travail', 'voiture', 'demain', 'sommeil']
+control_kws_sql = [f"'{x}'" for x in control_kws]
+norm_ili_sql = f"""WITH grippe_fr AS
+  (
+    SELECT period_start, post_count, query
+    FROM `digepizcde.bsky_housekeeping.housekeeping` 
+    WHERE query IN ({",".join(ili_kws_sql)}) and langs LIKE '{lang}' 
+  ),
+rest_fr AS
+  (
+    SELECT period_start, SUM(post_count) as post_count
+    FROM `digepizcde.bsky_housekeeping.housekeeping` 
+    WHERE query IN ({",".join(control_kws_sql)}) and langs LIKE '{lang}'
+    GROUP BY period_start 
+  ),
+
+dates AS (
+  SELECT period_start FROM grippe_fr
+  UNION DISTINCT
+  SELECT period_start from rest_fr
+),
+
+total as (
+  SELECT 
+    DATE_TRUNC(d.period_start, ISOWEEK) as iso_weekstartdate,
+    SUM(COALESCE(g.post_count, 0)) as grippe_posts,
+    SUM(COALESCE(r.post_count, 0)) as rest_posts,
+  FROM dates d
+  LEFT JOIN grippe_fr g
+    on d.period_start = g.period_start
+  LEFT JOIN rest_fr r
+    on d.period_start = r.period_start
+  GROUP BY 1
+),
+
+ili_fr AS (
+  SELECT 
+    iso_weekstartdate,
+    ili_case
+  FROM `digepizcde.case_data.who_fluid`
+  WHERE country_code = '{country_code}'
+)
+
+SELECT
+  i.iso_weekstartdate as date,
+  COALESCE(i.ili_case, 0) as ili_case,
+  COALESCE(t.grippe_posts / (t.grippe_posts + t.rest_posts), 0) as norm_post_count
+FROM ili_fr i
+FULL JOIN total t
+ON
+  i.iso_weekstartdate = t.iso_weekstartdate
+WHERE i.iso_weekstartdate > '2023-08-01'"""
+```
+
+```{python}
+#| echo: false
+#| output: false
+norm_ili_df = pandas_gbq.read_gbq(
+    norm_ili_sql, credentials=credentials
+).set_index('date')
+norm_ili_df.index = pd.to_datetime(norm_ili_df.index)
+```

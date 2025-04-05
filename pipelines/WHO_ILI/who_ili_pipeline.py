@@ -28,6 +28,9 @@ def run(dataset_id: Literal['fluid', 'flunet'], verbose = True ):
     if dataset_id == "flunet":
         df = df.drop(['BVIC_DELUNK', 'BYAM'], axis = 1)
     
+    if dataset_id == "fluid":
+        df = df.drop("COMMENTS", axis = 1)
+    
     load_info = pipeline.run(
         df,
         table_name="who_" + dataset_id,

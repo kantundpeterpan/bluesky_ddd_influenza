@@ -33,7 +33,7 @@ tasks:
     tasks:
       - id: bsky_posts_query
         type: io.kestra.plugin.scripts.shell.Commands
-        imeout: PT15M
+        timeout: PT15M
         retry:
           type: constant
           maxAttempt: 3

@@ -2,66 +2,268 @@
 title: "Beyond twitter"
 subtitle: "Exploring `bluesky.social` for digital disease detection and prototyping a data extraction pipeline for ILI surveillance"
 author: "Heiner Atze, MSc, PhD"
-institute: Hasselt University
-date: "April 24, 2024"
+institute: Digital Epidemiology 2025, Hasselt University
+date: "April 10, 2025"
 format:
   revealjs: 
     theme: default
     reference-location: margin
+    preview-links: true
+    toc: false
+    toc-title: Outline
+    incremental: false
+    scrollable: true
+
   beamer:
     toc: true
-    toc-title: Outline
+    toc-title: Outlininglines
     theme: Hannover
+    slide-level: 2
     aspectratio: 169
     pdf-engine: tectonic
+    incremental: false
+
+jupyter: digepi
+execute: 
+  cache: false 
+  echo: false
+  output: false
+
 bibliography: "../../dig_epi.bib"
 ---
 
-# Outline
-
-- Introduction
-  - short history of `bluesky` ^[@SignoriniTwitter2011] 
-  
-  
-[^1]: @SignoriniTwitter2011
+{{< include ../analysis/raw_posts_correlation.qmd >}}
 
 # Introduction
 
-## short history of bluesky
+## `bluesky`: general aspects
 
-- What is special ? decentralized @balduf2024looking
-- Where does it come from ... twitter
+::: {.columns}
 
-## some figures and stats
+:::: {.column}
 
-## Brief literature review of articles using `bluesky`
+- microblogging platform 
+- similar to `twitter` in user experience
+- decentralized 
+- open source
 
-- Who is on there ?
-- Polarisation and stuff
+::::
 
-- any epidemiological research ?
+:::: {.column}
+
+![](./figures/bluesky_logo.png)
+
+::::
+
+:::
+
+## Decentralization and Democratization of content algorithms [^longnote]
+
+- Decentralized User Identifier (DID)
+  - immutable, associated with human readable user handle
+- Personal Data servers (PSDs)
+
+- DIDs and affiliated contents are portable between PSDs 
+- Users can choose, prioritize and develop feed generators and content labelers
+
+[^longnote]: @balduf2024looking
+
+## Development of user activity [^ref1]
+
+::: {.columns}
+
+::: {.column}
+
+- current estimate: ca. 33 Millions active users
+- user base expanded in bursts after key events:
+  - 2022: acquisition of `twitter` by Elon Musk
+  - 2024: ban of `X` in Brazil, presidential election in the US
+
+:::
+
+:::: {.column}
+
+![](./figures/bsky_guardian.png)
+
+::::
+
+::: 
+
+[^ref1]: @explodingtopicsBlueskyUser, @balduf2024looking
+
+## Literature addressing `bluesky`
+
+- Google scholar search : "bluesky" AND "social" since 2022
+- 43 articles
+
+- main topics: 
+  - decentralized social network architecture
+  - user migration from `X` to `bluesky` 2024
+  - network structure and dynamics
+
+- no results for 
+  - "bluesky" AND "disease"
+  - "bluesky" AND "epidemiology"
 
 # Exploration of bluesky data
 
 ## bluesky API
 
-- accessibility
-- terminology
-- metadata
-- availabilty of data
-  - for now messages are returned exhaustively and deterministically
+- publicly accessible for free
+- extensive documenation at https://docs.bsky.app/docs/category/http-reference
 
+## `searchPosts` API method
 
-## (Un)official statistics
+- [API documentation](https://docs.bsky.app/docs/api/app-bsky-feed-search-posts)
 
-# Some research
+- selected parameters:
+  - `q`: search query
+  - `since`, `until`: defining search period  
 
-## Methodology
+- deterministic search
+- allows exhaustive sampling
 
-- focusing on French (time zone problem)
+## `getProfiles`
+
+- allows to retrieve the author profile information
+- for reference, not used in this project
+
+## Post metadata
+
+- defined in the [SDK documentation](https://atproto.blue/en/latest/atproto/atproto_client.models.app.bsky.feed.defs.html#atproto_client.models.app.bsky.feed.defs.PostView)
+
+- fields (selection):
+  - `uri`: unique post identifier
+  - `author`: contains `did` which allows to retrieve user profile
+  - `record`: contains the text and time information of the message
+  - `embedded`: any embedded media (images, other posts, etc ...)
+
+- in contrary to former `twitter` post metadata, no geoinformation
+
+## User information
+
+- `Feedgens`
+- `Labelers`
+
+- no geo information
+
+# Project
+
+## Outline
+
+**`bluesky` post data for digital disease surveillance**
+
+. . .
+
+**Implementation of a continuous surveillance pipeline**
+
+# Methods
+
+# Data extraction
+
+## Symptom related message extraction
+
+- focused on French `bluesky` posts (data volume constraint)
 - extraction using list of keywords
-  - grippe
-  - rhume
-  - fievre
-  - courbature
+  - grippe (flu, influenza)
+  - rhume (common cold)
+  - fievre (fever)
+  - courbature (muscle pain)
+
+- extraction of 
+  - complete message data for further language processing
+  - 
+
+## Basal network activity
+
+- probing of the basal network activity using keywords
+  - travail (*work*)
+  - demain (*tomorrow*)
+  - voiture (*car*)
+  - sommeil (*sleep*)
+
+- post counts aggregated by day
+
+## Case data
+
+  - data downloaded from `WHO Flumart`
+    = FluID: ILI  case data
+    - FluNet: virological data
+
+## Data processing for time series extraction
+
+- Normalization of ILI post counts by basal network activity
 - 
+
+- LLM
+- [ECDC case definition](https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32018D0945&from=EN#page=24)
+  - LLM vs. random post selection
+
+# Results
+
+## Raw post counts
+
+::: {.columns}
+
+::: {.column}
+
+```{python}
+#| output: true
+ax1 = raw_ili_df.plot( y = 'post_count', color = 'C0')
+ax1.set_ylabel("bsky post counts", color = 'C0')
+ax1.set_xlabel("week start date")
+
+ax2 = ax1.twinx()
+raw_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
+ax2.set_ylabel("ILI case count", color = 'C1')
+```
+
+:::
+
+::: {.column}
+
+### Correlation
+
+```{python}
+#| output: true
+raw_ili_df.corr()
+```
+
+:::
+
+::: 
+
+## Normalized post counts
+
+::: {.columns}
+
+::: {.column}
+
+```{python}
+#| output: true
+ax1 = raw_ili_df.plot( y = 'post_count', color = 'C0')
+ax1.set_ylabel("bsky post counts", color = 'C0')
+ax1.set_xlabel("week start date")
+
+ax2 = ax1.twinx()
+raw_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
+ax2.set_ylabel("ILI case count", color = 'C1')
+```
+
+:::
+
+::: {.column}
+
+### Correlation
+
+```{python}
+#| output: true
+raw_ili_df.corr().round(3)
+```
+
+:::
+
+::: 
+
+
+## Bibliography {#refs}

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head>
-<script src="presentation_files/libs/clipboard/clipboard.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="presentation_files/libs/clipboard/clipboard.min.js"></script>
 <script src="presentation_files/libs/quarto-html/tabby.min.js"></script>
 <script src="presentation_files/libs/quarto-html/popper.min.js"></script>
 <script src="presentation_files/libs/quarto-html/tippy.umd.min.js"></script>
@@ -11,7 +11,7 @@
   <meta name="generator" content="quarto-1.5.54">
 
   <meta name="author" content="Heiner Atze, MSc, PhD">
-  <meta name="dcterms.date" content="2024-04-24">
+  <meta name="dcterms.date" content="2025-04-10">
   <title>Beyond twitter</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -265,6 +265,7 @@
     }
     .reveal .slide:not(.center) {
       height: 100%;
+      overflow-y: auto;
     }
     .reveal .slide.scrollable {
       overflow-y: auto;
@@ -341,6 +342,9 @@
       margin-right: 0; 
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+  
+  <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 </head>
 <body class="quarto-light">
   <div class="reveal">
@@ -356,44 +360,76 @@
 Heiner Atze, MSc, PhD 
 </div>
         <p class="quarto-title-affiliation">
-            Hasselt University
+            Digital Epidemiology 2025, Hasselt University
           </p>
     </div>
 </div>
 
-  <p class="date">2024-04-24</p>
+  <p class="date">2025-04-10</p>
 </section>
-<section id="outline" class="title-slide slide level1 center">
-<h1>Outline</h1>
-<ul>
-<li>Introduction
-<ul>
-<li>short history of <code>bluesky</code> <sup>1</sup></li>
-</ul></li>
-</ul>
-<aside><ol class="aside-footnotes"><li id="fn1"><p><span class="citation" data-cites="SignoriniTwitter2011">Signorini (<a href="#/methodology" role="doc-biblioref" onclick="">2011</a>)</span></p></li></ol></aside></section>
-
 <section>
 <section id="introduction" class="title-slide slide level1 center">
 <h1>Introduction</h1>
 
 </section>
-<section id="short-history-of-bluesky" class="slide level2">
-<h2>short history of bluesky</h2>
+<section id="bluesky-general-aspects" class="slide level2">
+<h2><code>bluesky</code>: general aspects</h2>
+<div class="columns">
+<div class="column">
 <ul>
-<li>What is special ? decentralized <span class="citation" data-cites="balduf2024looking">Balduf et al. (<a href="#/methodology" role="doc-biblioref" onclick="">2024</a>)</span></li>
-<li>Where does it come from … twitter</li>
+<li>microblogging platform</li>
+<li>similar to <code>twitter</code> in user experience</li>
+<li>decentralized</li>
+<li>open source</li>
 </ul>
+</div><div class="column">
+<p><img data-src="./figures/bluesky_logo.png"></p>
+</div></div>
 </section>
-<section id="some-figures-and-stats" class="slide level2">
-<h2>some figures and stats</h2>
-</section>
-<section id="brief-literature-review-of-articles-using-bluesky" class="slide level2">
-<h2>Brief literature review of articles using <code>bluesky</code></h2>
+<section id="decentralization-and-democratization-of-content-algorithms-longnote" class="slide level2 scrollable">
+<h2>Decentralization and Democratization of content algorithms <sup>1</sup></h2>
 <ul>
-<li><p>Who is on there ?</p></li>
-<li><p>Polarisation and stuff</p></li>
-<li><p>any epidemiological research ?</p></li>
+<li><p>Decentralized User Identifier (DID)</p>
+<ul>
+<li>immutable, associated with human readable user handle</li>
+</ul></li>
+<li><p>Personal Data servers (PSDs)</p></li>
+<li><p>DIDs and affiliated contents are portable between PSDs</p></li>
+<li><p>Users can choose, prioritize and develop feed generators and content labelers</p></li>
+</ul>
+<aside><ol class="aside-footnotes"><li id="fn1"><p><span class="citation" data-cites="balduf2024looking">Balduf et al. (<a href="" role="doc-biblioref" onclick="return false;">2024</a>)</span></p></li></ol></aside></section>
+<section id="development-of-user-activity-ref1" class="slide level2 scrollable">
+<h2>Development of user activity <sup>1</sup></h2>
+<div class="columns">
+<div class="column">
+<ul>
+<li>current estimate: ca. 33 Millions active users</li>
+<li>user base expanded in bursts after key events:
+<ul>
+<li>2022: acquisition of <code>twitter</code> by Elon Musk</li>
+<li>2024: ban of <code>X</code> in Brazil, presidential election in the US</li>
+</ul></li>
+</ul>
+</div><div class="column">
+<p><img data-src="./figures/bsky_guardian.png"></p>
+</div></div>
+<aside><ol class="aside-footnotes"><li id="fn2"><p><span class="citation" data-cites="explodingtopicsBlueskyUser">Duarte</span>, <span class="citation" data-cites="balduf2024looking">Balduf et al. (<a href="" role="doc-biblioref" onclick="return false;">2024</a>)</span></p></li></ol></aside></section>
+<section id="literature-addressing-bluesky" class="slide level2">
+<h2>Literature addressing <code>bluesky</code></h2>
+<ul>
+<li><p>Google scholar search : “bluesky” AND “social” since 2022</p></li>
+<li><p>43 articles</p></li>
+<li><p>main topics:</p>
+<ul>
+<li>decentralized social network architecture</li>
+<li>user migration from <code>X</code> to <code>bluesky</code> 2024</li>
+<li>network structure and dynamics</li>
+</ul></li>
+<li><p>no results for</p>
+<ul>
+<li>“bluesky” AND “disease”</li>
+<li>“bluesky” AND “epidemiology”</li>
+</ul></li>
 </ul>
 </section></section>
 <section>
@@ -404,36 +440,195 @@ Heiner Atze, MSc, PhD
 <section id="bluesky-api" class="slide level2">
 <h2>bluesky API</h2>
 <ul>
-<li>accessibility</li>
-<li>terminology</li>
-<li>metadata</li>
-<li>availabilty of data
-<ul>
-<li>for now messages are returned exhaustively and deterministically</li>
-</ul></li>
+<li>publicly accessible for free</li>
+<li>extensive documenation at https://docs.bsky.app/docs/category/http-reference</li>
 </ul>
 </section>
-<section id="unofficial-statistics" class="slide level2">
-<h2>(Un)official statistics</h2>
+<section id="searchposts-api-method" class="slide level2">
+<h2><code>searchPosts</code> API method</h2>
+<ul>
+<li><p><a href="https://docs.bsky.app/docs/api/app-bsky-feed-search-posts">API documentation</a></p></li>
+<li><p>selected parameters:</p>
+<ul>
+<li><code>q</code>: search query</li>
+<li><code>since</code>, <code>until</code>: defining search period</li>
+</ul></li>
+<li><p>deterministic search</p></li>
+<li><p>allows exhaustive sampling</p></li>
+</ul>
+</section>
+<section id="getprofiles" class="slide level2">
+<h2><code>getProfiles</code></h2>
+<ul>
+<li>allows to retrieve the author profile information</li>
+<li>for reference, not used in this project</li>
+</ul>
+</section>
+<section id="post-metadata" class="slide level2">
+<h2>Post metadata</h2>
+<ul>
+<li><p>defined in the <a href="https://atproto.blue/en/latest/atproto/atproto_client.models.app.bsky.feed.defs.html#atproto_client.models.app.bsky.feed.defs.PostView">SDK documentation</a></p></li>
+<li><p>fields (selection):</p>
+<ul>
+<li><code>uri</code>: unique post identifier</li>
+<li><code>author</code>: contains <code>did</code> which allows to retrieve user profile</li>
+<li><code>record</code>: contains the text and time information of the message</li>
+<li><code>embedded</code>: any embedded media (images, other posts, etc …)</li>
+</ul></li>
+<li><p>in contrary to former <code>twitter</code> post metadata, no geoinformation</p></li>
+</ul>
+</section>
+<section id="user-information" class="slide level2">
+<h2>User information</h2>
+<ul>
+<li><p><code>Feedgens</code></p></li>
+<li><p><code>Labelers</code></p></li>
+<li><p>no geo information</p></li>
+</ul>
 </section></section>
 <section>
-<section id="some-research" class="title-slide slide level1 center">
-<h1>Some research</h1>
+<section id="project" class="title-slide slide level1 center">
+<h1>Project</h1>
 
 </section>
-<section id="methodology" class="slide level2 smaller scrollable">
-<h2>Methodology</h2>
+<section id="outline" class="slide level2">
+<h2>Outline</h2>
+<p><strong><code>bluesky</code> post data for digital disease surveillance</strong></p>
+<div class="fragment">
+<p><strong>Implementation of a continuous surveillance pipeline</strong></p>
+</div>
+</section></section>
+<section id="methods" class="title-slide slide level1 center">
+<h1>Methods</h1>
+
+</section>
+
+<section>
+<section id="data-extraction" class="title-slide slide level1 center">
+<h1>Data extraction</h1>
+
+</section>
+<section id="symptom-related-message-extraction" class="slide level2">
+<h2>Symptom related message extraction</h2>
 <ul>
-<li>focusing on French (time zone problem)</li>
+<li>focused on French <code>bluesky</code> posts (data volume constraint)</li>
 <li>extraction using list of keywords
 <ul>
-<li>grippe</li>
-<li>rhume</li>
-<li>fievre</li>
-<li>courbature</li>
+<li>grippe (flu, influenza)</li>
+<li>rhume (common cold)</li>
+<li>fievre (fever)</li>
+<li>courbature (muscle pain)</li>
 </ul></li>
+<li>extraction of
+<ul>
+<li>complete message data for further language processing</li>
 <li></li>
+</ul></li>
 </ul>
+</section>
+<section id="basal-network-activity" class="slide level2">
+<h2>Basal network activity</h2>
+<ul>
+<li>probing of the basal network activity using keywords
+<ul>
+<li>travail (<em>work</em>)</li>
+<li>demain (<em>tomorrow</em>)</li>
+<li>voiture (<em>car</em>)</li>
+<li>sommeil (<em>sleep</em>)</li>
+</ul></li>
+<li>post counts aggregated by day</li>
+</ul>
+</section>
+<section id="case-data" class="slide level2">
+<h2>Case data</h2>
+<ul>
+<li>data downloaded from <code>WHO Flumart</code> = FluID: ILI case data
+<ul>
+<li>FluNet: virological data</li>
+</ul></li>
+</ul>
+</section>
+<section id="data-processing-for-time-series-extraction" class="slide level2">
+<h2>Data processing for time series extraction</h2>
+<ul>
+<li>Normalization of ILI post counts by basal network activity</li>
+<li></li>
+<li>LLM</li>
+<li><a href="https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32018D0945&amp;from=EN#page=24">ECDC case definition</a>
+<ul>
+<li>LLM vs.&nbsp;random post selection</li>
+</ul></li>
+</ul>
+</section></section>
+<section>
+<section id="results" class="title-slide slide level1 center">
+<h1>Results</h1>
+
+</section>
+<section id="raw-post-counts" class="slide level2">
+<h2>Raw post counts</h2>
+<div class="columns">
+<div class="column">
+<div id="e243a175" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display" data-execution_count="44">
+<pre><code>Text(0, 0.5, 'ILI case count')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure>
+<p><img data-src="presentation_files/figure-revealjs/cell-5-output-2.png"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><div class="column">
+<h3 id="correlation">Correlation</h3>
+<div id="26f225fb" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display" data-execution_count="45">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+
+<table class="dataframe caption-top" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header" style="text-align: right;">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">post_count</th>
+<th data-quarto-table-cell-role="th">ili_case</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">post_count</td>
+<td>1.000000</td>
+<td>0.753039</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">ili_case</td>
+<td>0.753039</td>
+<td>1.000000</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div></div>
+</section>
+<section id="refs" class="slide level2">
+<h2>Bibliography</h2>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
@@ -443,8 +638,8 @@ Heiner Atze, MSc, PhD
 <div id="ref-balduf2024looking" class="csl-entry" role="listitem">
 Balduf, Leonhard, Saidu Sokoto, Onur Ascigil, Gareth Tyson, Björn Scheuermann, Maciej Korczyński, Ignacio Castro, and Michaŀ Król. 2024. <span>“Looking at the Blue Skies of Bluesky.”</span> In <em>Proceedings of the 2024 ACM on Internet Measurement Conference</em>, 76–91.
 </div>
-<div id="ref-SignoriniTwitter2011" class="csl-entry" role="listitem">
-Signorini, Alberto Maria AND Polgreen, Alessio AND Segre. 2011. <span>“The Use of Twitter to Track Levels of Disease Activity and Public Concern in the u.s. During the Influenza a H1N1 Pandemic.”</span> <em>PLOS ONE</em> 6 (5): 1–10. <a href="https://doi.org/10.1371/journal.pone.0019467">https://doi.org/10.1371/journal.pone.0019467</a>.
+<div id="ref-explodingtopicsBlueskyUser" class="csl-entry" role="listitem">
+Duarte, Fabio. <span>“<span>B</span>luesky <span>U</span>ser <span>A</span>ge, <span>G</span>ender, &amp; <span>D</span>emographics (2025).”</span> <a href="https://explodingtopics.com/blog/bluesky-users" class="uri">https://explodingtopics.com/blog/bluesky-users</a>.
 </div>
 </div>
 </section></section>
@@ -602,7 +797,7 @@ Signorini, Alberto Maria AND Polgreen, Alessio AND Segre. 2011. <span>“The Use
         hideCursorTime: 5000,
 
         // Opens links in an iframe preview overlay
-        previewLinks: false,
+        previewLinks: true,
 
         // Transition style (none/fade/slide/convex/concave/zoom)
         transition: 'none',

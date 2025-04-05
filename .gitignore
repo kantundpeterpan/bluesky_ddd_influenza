@@ -8,4 +8,4 @@ __pycache__
 */string_sanitizer.log
 .env_encoded
 misc.json
-presentation_files/
+*/presentation_files/

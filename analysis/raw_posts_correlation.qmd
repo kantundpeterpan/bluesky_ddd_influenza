@@ -24,14 +24,42 @@ ili_kws = [
 ]
 ili_kws_sql = [f"'{x}'" for x in ili_kws]
 
-raw_ili_sql =f"""WITH ili_fr AS
+raw_ili_sql =f"""WITH posts AS
   (
-    SELECT DATE_TRUNC(period_start, ISOWEEK) as iso_weekstartdate, SUM(post_count) as post_count, 
+    SELECT 
+      DATE_TRUNC(period_start, ISOWEEK) as iso_weekstartdate, 
+      SUM(post_count) as post_count, 
     FROM `digepizcde.bsky_housekeeping.housekeeping` 
     WHERE query IN ({",".join(ili_kws_sql)}) and langs LIKE '%{lang}%'
     GROUP BY 1
     ORDER BY 1
   ),
+
+year_dates AS (
+  -- Generate all dates within the given year range
+  SELECT 
+    day
+  FROM 
+    UNNEST(GENERATE_DATE_ARRAY(DATE('2023-01-01'), DATE('2025-04-05'))) AS day
+),
+iso_weeks AS (
+  -- Truncate each date to the start of its ISO week
+  SELECT 
+    DISTINCT DATE_TRUNC(day, ISOWEEK) AS iso_week_start_date
+  FROM 
+    year_dates
+),
+
+dates AS (
+-- Return the unique ISO week start dates
+SELECT 
+  iso_week_start_date as iso_weekstartdate
+FROM 
+  iso_weeks
+ORDER BY 
+  iso_week_start_date
+),
+
 who_ili_fr AS (
   SELECT
     iso_weekstartdate,
@@ -42,12 +70,14 @@ who_ili_fr AS (
 )
 
 SELECT
-  w.iso_weekstartdate as date,
-  i.post_count,
-  w.ili_case
-FROM who_ili_fr w
-LEFT JOIN ili_fr i
-ON w.iso_weekstartdate = i.iso_weekstartdate
+  d.iso_weekstartdate as date,
+  COALESCE(p.post_count, 0) as post_count,
+  COALESCE(w.ili_case, 0) as ili_case
+FROM dates d
+LEFT OUTER JOIN posts p
+ON d.iso_weekstartdate = p.iso_weekstartdate
+LEFT OUTER JOIN who_ili_fr w
+ON d.iso_weekstartdate = w.iso_weekstartdate
 WHERE w.iso_weekstartdate > '2023-08-01'
 """
 ```
@@ -78,10 +108,29 @@ rest_fr AS
     GROUP BY period_start 
   ),
 
+year_dates AS (
+  -- Generate all dates within the given year range
+  SELECT 
+    day
+  FROM 
+    UNNEST(GENERATE_DATE_ARRAY(DATE('2023-01-01'), DATE('2025-04-05'))) AS day
+),
+iso_weeks AS (
+  -- Truncate each date to the start of its ISO week
+  SELECT 
+    DISTINCT DATE_TRUNC(day, ISOWEEK) AS iso_week_start_date
+  FROM 
+    year_dates
+),
+
 dates AS (
-  SELECT period_start FROM grippe_fr
-  UNION DISTINCT
-  SELECT period_start from rest_fr
+-- Return the unique ISO week start dates
+SELECT 
+  iso_week_start_date as period_start
+FROM 
+  iso_weeks
+ORDER BY 
+  iso_week_start_date
 ),
 
 total as (
@@ -106,21 +155,105 @@ ili_fr AS (
 )
 
 SELECT
-  i.iso_weekstartdate as date,
+  t.iso_weekstartdate as date,
   COALESCE(i.ili_case, 0) as ili_case,
+  t.grippe_posts,
+  t.rest_posts,
   COALESCE(t.grippe_posts / (t.grippe_posts + t.rest_posts), 0) as norm_post_count
-FROM ili_fr i
-FULL JOIN total t
-ON
-  i.iso_weekstartdate = t.iso_weekstartdate
-WHERE i.iso_weekstartdate > '2023-08-01'"""
+FROM total t
+LEFT OUTER JOIN ili_fr i
+ON t.iso_weekstartdate = i.iso_weekstartdate
+WHERE t.iso_weekstartdate > '2023-08-01'
+ORDER BY 1
+"""
 ```
 
 ```{python}
 #| echo: false
 #| output: false
 norm_ili_df = pandas_gbq.read_gbq(
-    norm_ili_sql, credentials=credentials
+   norm_ili_sql, credentials=credentials
 ).set_index('date')
 norm_ili_df.index = pd.to_datetime(norm_ili_df.index)
+```
+
+```{python}
+llm_union_snippet = "UNION ALL\n".join([f"SELECT uri, record__created_at FROM `digepizcde.bsky_posts.{kw}`\n" for kw in ili_kws])
+
+llm_ili_sql=f"""WITH posts as(
+  {llm_union_snippet}
+),
+
+llm_filtered_posts AS(
+    SELECT
+    *,
+    EXTRACT(DATE FROM DATE_TRUNC(p.record__created_at, ISOWEEK)) as iso_weekstartdate
+    FROM posts p
+    WHERE p.uri in (
+        SELECT uri
+        FROM `digepizcde.bsky_posts.llm_hints`
+        WHERE ili_related=true
+    )
+),
+
+total AS (
+    SELECT
+      iso_weekstartdate,
+      COUNT(*) as ili_rel_posts
+    FROM llm_filtered_posts
+    GROUP BY iso_weekstartdate
+),
+
+year_dates AS (
+  -- Generate all dates within the given year range
+  SELECT 
+    day
+  FROM 
+    UNNEST(GENERATE_DATE_ARRAY(DATE('2023-01-01'), DATE('2025-04-05'))) AS day
+),
+iso_weeks AS (
+  -- Truncate each date to the start of its ISO week
+  SELECT 
+    DISTINCT DATE_TRUNC(day, ISOWEEK) AS iso_week_start_date
+  FROM 
+    year_dates
+),
+
+dates AS (
+-- Return the unique ISO week start dates
+SELECT 
+  iso_week_start_date as period_start
+FROM 
+  iso_weeks
+ORDER BY 
+  iso_week_start_date
+),
+
+ili_fr AS (
+  SELECT 
+    iso_weekstartdate,
+    ili_case
+  FROM `digepizcde.case_data.who_fluid`
+  WHERE country_code = '{country_code}'
+)
+
+SELECT
+  t.iso_weekstartdate as date,
+  COALESCE(i.ili_case, 0) as ili_case,
+  COALESCE(t.ili_rel_posts, 0) as post_count
+FROM total t
+LEFT OUTER JOIN ili_fr i
+ON t.iso_weekstartdate = i.iso_weekstartdate
+WHERE t.iso_weekstartdate > '2023-08-01'
+ORDER BY 1
+"""
+```
+
+```{python}
+#| echo: false
+#| output: false
+llm_ili_df = pandas_gbq.read_gbq(
+   llm_ili_sql, credentials=credentials
+).set_index('date')
+llm_ili_df.index = pd.to_datetime(llm_ili_df.index)
 ```

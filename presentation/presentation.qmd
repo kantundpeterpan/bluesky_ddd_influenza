@@ -241,12 +241,12 @@ raw_ili_df.corr()
 
 ```{python}
 #| output: true
-ax1 = raw_ili_df.plot( y = 'post_count', color = 'C0')
+ax1 = norm_ili_df.plot( y = 'norm_post_count', color = 'C0')
 ax1.set_ylabel("bsky post counts", color = 'C0')
 ax1.set_xlabel("week start date")
 
 ax2 = ax1.twinx()
-raw_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
+norm_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
 ax2.set_ylabel("ILI case count", color = 'C1')
 ```
 
@@ -258,12 +258,53 @@ ax2.set_ylabel("ILI case count", color = 'C1')
 
 ```{python}
 #| output: true
-raw_ili_df.corr().round(3)
+norm_ili_df.corr().round(3)
 ```
 
 :::
 
 ::: 
 
+**It is not as simple as that .... :/**
+
+## Simple linear regression
+
+Idea account for growing user activity and interaction between 
+
+```{python}
+norm_ili_df['year'] = norm_ili_df.index.year
+```
+
+## LLM annotated post counts, raw
+
+::: {.columns}
+
+::: {.column}
+
+```{python}
+#| output: true
+ax1 = llm_ili_df.plot( y = 'post_count', color = 'C0')
+ax1.set_ylabel("bsky post counts", color = 'C0')
+ax1.set_xlabel("week start date")
+
+ax2 = ax1.twinx()
+llm_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
+ax2.set_ylabel("ILI case count", color = 'C1')
+```
+
+:::
+
+::: {.column}
+
+### Correlation
+
+```{python}
+#| output: true
+llm_ili_df.corr().round(3)
+```
+
+:::
+
+::: 
 
 ## Bibliography {#refs}

@@ -104,3 +104,13 @@ graph LR
   - long format:
     - day (index)
     - count ili_related
+
+## Data analysis
+
+- correlation analysis
+
+- modeling
+
+  - word count vecotrs
+  - BERT embeddings
+  - before/after LLM ili_related filtering

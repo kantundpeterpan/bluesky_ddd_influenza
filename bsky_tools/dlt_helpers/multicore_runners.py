@@ -3,7 +3,9 @@ from multiprocessing import set_start_method
 
 import os
 import threading
-from multiprocessing import Process, Manager
+from multiprocessing import Manager
+from threading import Thread as Process
+
 from typing import Callable, List
 from tqdm import tqdm
 import time
@@ -61,7 +63,7 @@ def pool_func_post_count(task_queue, progress_queue, result_queue):
 def _run_query_pool(
     param_tuple: tuple,
     pool_func: Callable,
-    n_cpus: int = os.cpu_count(),
+    n_jobs: int = os.cpu_count(),
     yield_flag: bool = False
 ) -> List[List[dict]]:
     """
@@ -71,7 +73,7 @@ def _run_query_pool(
         param_tuple (tuple): A tuple of parameters to pass to the `pool_func`.
         pool_func (Callable): The function to execute in parallel.
                           Defaults to `get_posts_count_adaptive_sliding_window_reverse`
-        n_cpus (int): The number of CPUs to use for the pool. Defaults to `os.cpu_count()`.
+        n_jobs (int): The number of process/threads to use for the pool. Defaults to `os.cpu_count()`.
     Returns:
         List[List[dict]]: A list of results from the `pool_func` for each input parameter set.
     """
@@ -108,7 +110,7 @@ def _run_query_pool(
 
     # Create and start worker processes
     processes = []
-    for _ in range(n_cpus):
+    for _ in range(n_jobs):
         p = Process(target=pool_func, args=(task_queue, progress_queue, result_queue))
         p.start()
         processes.append(p)
@@ -116,7 +118,7 @@ def _run_query_pool(
     [task_queue.put(task) for task in tasks]
 
     # Signal the workers to terminate
-    for _ in range(n_cpus):
+    for _ in range(n_jobs):
        task_queue.put(None)
 
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -124,7 +126,7 @@ def _run_query_pool(
     # Wait for all tasks to be completed by each of the child processes
     while any([p.is_alive() for p in processes]):
         for i,p in enumerate(processes):
-            p.join()
+            p.join(timeout = 60)
             if p.is_alive():
                 logging.info(f"Process {i} - alive")
                 

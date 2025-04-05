@@ -1,7 +1,8 @@
 from ..utils import ChatOpenRouter
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from typing import TypedDict, Annotated, List, Iterable
-from multiprocessing import Pool, Queue, Process, Manager
+from multiprocessing import Pool, Queue, Manager
+from threading import Thread as Process # wonky hack
 import threading
 from tqdm import tqdm  # For the progress bar
 from pathlib import Path
@@ -105,8 +106,11 @@ class SymptomExtractor():
             task_queue.put(None)
 
         # Wait for all tasks to be completed by each of the child processes
-        for p in processes:
-            p.join()
+        while any([p.is_alive() for p in processes]):
+            for i,p in enumerate(processes):
+                p.join(timeout=60)
+                if p.is_alive():
+                    logging.info(f"Process {i} - alive")
         # It is important to join all processes before proceeding
 
         progress_queue.put(None)

@@ -104,7 +104,8 @@ def bsky_housekeeping_query(
     query_results = _run_query_pool(
         zip(*unzipped_params),
         pool_func=pool_func_post_count,
-        yield_flag=False
+        yield_flag=False,
+        n_jobs=n_jobs
     )
     
     # No messages found for query
@@ -149,7 +150,7 @@ def run(
     start_date: str,
     end_date: Optional[str] = None,
     out_file: str = None,
-    n_jobs: int = os.cpu_count(),
+    n_jobs: int = 50,
     verbose: bool = True
 ):
     # Initialize dlt pipeline

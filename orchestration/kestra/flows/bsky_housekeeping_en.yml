@@ -33,7 +33,11 @@ tasks:
     tasks:
       - id: bsky_housekeeping_query
         type: io.kestra.plugin.scripts.shell.Commands
-        timeout: PT7M
+        imeout: PT15M
+        retry:
+          type: constant
+          maxAttempt: 3
+          interval: PT10S
         taskRunner:
           type: io.kestra.plugin.scripts.runner.docker.Docker
           pullPolicy: ALWAYS

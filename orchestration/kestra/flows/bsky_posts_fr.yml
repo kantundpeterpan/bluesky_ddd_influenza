@@ -33,6 +33,11 @@ tasks:
     tasks:
       - id: bsky_posts_query
         type: io.kestra.plugin.scripts.shell.Commands
+        imeout: PT15M
+        retry:
+          type: constant
+          maxAttempt: 3
+          interval: PT10S 
         taskRunner:
           type: io.kestra.plugin.scripts.runner.docker.Docker
           pullPolicy: ALWAYS

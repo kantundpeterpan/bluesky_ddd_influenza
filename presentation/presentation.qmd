@@ -1,0 +1,67 @@
+---
+title: "Beyond twitter"
+subtitle: "Exploring `bluesky.social` for digital disease detection and prototyping a data extraction pipeline for ILI surveillance"
+author: "Heiner Atze, MSc, PhD"
+institute: Hasselt University
+date: "April 24, 2024"
+format:
+  revealjs: 
+    theme: default
+    reference-location: margin
+  beamer:
+    toc: true
+    toc-title: Outline
+    theme: Hannover
+    aspectratio: 169
+    pdf-engine: tectonic
+bibliography: "../../dig_epi.bib"
+---
+
+# Outline
+
+- Introduction
+  - short history of `bluesky` ^[@SignoriniTwitter2011] 
+  
+  
+[^1]: @SignoriniTwitter2011
+
+# Introduction
+
+## short history of bluesky
+
+- What is special ? decentralized @balduf2024looking
+- Where does it come from ... twitter
+
+## some figures and stats
+
+## Brief literature review of articles using `bluesky`
+
+- Who is on there ?
+- Polarisation and stuff
+
+- any epidemiological research ?
+
+# Exploration of bluesky data
+
+## bluesky API
+
+- accessibility
+- terminology
+- metadata
+- availabilty of data
+  - for now messages are returned exhaustively and deterministically
+
+
+## (Un)official statistics
+
+# Some research
+
+## Methodology
+
+- focusing on French (time zone problem)
+- extraction using list of keywords
+  - grippe
+  - rhume
+  - fievre
+  - courbature
+- 

@@ -38,7 +38,7 @@ def fetch_posts(
     start_date: str,
     end_date: Optional[str] = None,
     out_file: str = None,
-    n_jobs: int = os.cpu_count(),
+    n_jobs: int = 50,
     verbose: bool = True
 ):
     
@@ -55,7 +55,8 @@ def fetch_posts(
     query_results = _run_query_pool(
         zip(*unzipped_params),
         pool_func=pool_func_posts,
-        yield_flag=True
+        yield_flag=True,
+        n_jobs=n_jobs
     )
     
     yield from query_results

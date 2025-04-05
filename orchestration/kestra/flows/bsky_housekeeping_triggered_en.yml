@@ -31,6 +31,11 @@ tasks:
     tasks:
       - id: bsky_housekeeping_query
         type: io.kestra.plugin.scripts.shell.Commands
+        imeout: PT15M
+        retry:
+          type: constant
+          maxAttempt: 3
+          interval: PT10S
         commands:
           - python /project/pipelines/bsky_housekeeping/bsky_housekeeping_pipeline.py {{taskrun.value}} {{ trigger.date | dateAdd(-1, 'DAYS') | date('yyyy-MM-dd') }} {{inputs.end_date_str}}
         containerImage: kantundpeterpan/digepi_bsky:latest

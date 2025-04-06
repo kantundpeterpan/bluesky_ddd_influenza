@@ -34,7 +34,7 @@ def run(dataset_id: Literal['fluid', 'flunet'], verbose = True ):
     load_info = pipeline.run(
         df,
         table_name="who_" + dataset_id,
-        write_disposition="merge",
+        write_disposition="replace",
         primary_key=("COUNTRY_AREA_TERRITORY", "ISO_WEEKSTARTDATE")
     )
 

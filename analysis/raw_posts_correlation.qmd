@@ -7,7 +7,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pandas_gbq
 import sys
-sys.path.append("../")
+import os
+sys.path.append(os.path.abspath("../"))
 from analysis.bq_queries import get_post_count_ili_sql, get_llm_ili_sql
 from analysis.feature_eng import *
 from analysis.model_evaluation import *
@@ -19,26 +20,25 @@ credentials = service_account.Credentials.from_service_account_file(
 #| label: sql_raw_post counts
 #| output: false
 
-who_subset = 'fluid'
-lang = 'fr'
-country_code = "FRA"
+who_subset = 'flunet'
+lang = 'fr'#'fr'
+country_code = 'FRA' #"FRA"
 
 ili_kws = [
     'grippe',  'rhume', 'fievre', 'courbature'
+    # "Grippe", 'grippe', 'Schnupfen', 'Fieber', 'Muskelschmerzen'
 ]
 ili_kws_sql = [f"'{x}'" for x in ili_kws]
 ```
 
 ```{python}
 control_kws = ['travail', 'voiture', 'demain', 'sommeil']
+# control_kws = ['Auto', 'morgen', 'Arbeit', 'arbeiten', 'schlafen', 'Schlaf']
 control_kws_sql = [f"'{x}'" for x in control_kws]
 ```
 
 ```{python}
-post_count_ili_sql = get_post_count_ili_sql(
-    ili_kws_sql, control_kws_sql,
-    lang, country_code
-    )
+post_count_ili_sql ="SELECT * FROM `digepizcde.bsky_ili.bsky_ili_fr`"
 ```
 
 ```{python}
@@ -61,7 +61,10 @@ post_count_ili_df['season'] = post_count_ili_df['month'].apply(assign_season).as
 ```{python}
 lags = 2
 weeks_ahead = 1
-X = post_count_ili_df.drop(['ili_case', 'norm_post_count', 'rest_posts'], axis = 1)
+X = post_count_ili_df.drop([
+    'ili_case', 'ari_case', 'ili_incidence', 'ari_incidence',
+    'ili_pop_cov', 'ari_pop_cov', 'rest_posts', 'grippe_posts'
+    ], axis = 1)
 lagdfs = []
 
 for l in range(1, lags+1):
@@ -73,7 +76,7 @@ X = pd.concat([X, *lagdfs], axis = 1).dropna().iloc[:-weeks_ahead,:]
 ```
 
 ```{python}
-y = post_count_ili_df['ili_case'].iloc[lags+weeks_ahead:]
+y = post_count_ili_df['ili_incidence'].iloc[lags+weeks_ahead:]
 y = y.divide(y.max())
 ```
 
@@ -109,8 +112,27 @@ ypred = pd.Series(gbrt.predict(X), index = y.index)
 ```
 
 ```{python}
-y.plot()
+y.plot(label = 'True incidence')
 ypred.plot()
+```
+
+```{python}
+from sklearn.inspection import permutation_importance
+
+result = permutation_importance(
+    gbrt, X, y, n_repeats=50, random_state=42, n_jobs=-1
+)
+
+sorted_importances_idx = result.importances_mean.argsort()
+importances = pd.DataFrame(
+    result.importances[sorted_importances_idx].T,
+    columns=X.columns[sorted_importances_idx],
+).iloc[:,-5:]
+ax = importances.plot.box(vert=False, whis=10)
+ax.set_title("Permutation Importances")
+ax.axvline(x=0, color="k", linestyle="--")
+ax.set_xlabel("Decrease in accuracy score")
+ax.figure.tight_layout()
 ```
 
 ```{python}

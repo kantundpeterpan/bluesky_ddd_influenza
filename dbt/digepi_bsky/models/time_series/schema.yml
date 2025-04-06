@@ -1,0 +1,26 @@
+sources:
+  
+  - name: bsky_housekeeping
+    database: digepizcde
+    schema: bsky_housekeeping
+    tables:
+      - name: housekeeping
+        description: "Counts of posts containing housekeepign queries over time"
+  
+  - name: who_ili
+    database: digepizcde
+    schema: case_data
+    tables:
+      - name: who_fluid
+        description: "WHO epidemiological influenza data"
+
+models:
+  - name: bsky_ili_fr
+    sources:
+      - source('bsky_housekeeping', 'housekeeping')
+      - source('who_ili', 'who_fluid')
+
+  - name: bsky_ili_de
+    sources:
+      - source('bsky_housekeeping', 'housekeeping')
+      - source('who_ili', 'who_fluid')

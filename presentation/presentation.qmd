@@ -246,8 +246,8 @@ ax1.set_ylabel("bsky post counts", color = 'C0')
 ax1.set_xlabel("week start date")
 
 ax2 = ax1.twinx()
-post_count_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
-ax2.set_ylabel("ILI case count", color = 'C1')
+post_count_ili_df.plot(y = 'ili_incidence', ax = ax2, color = "C1")
+ax2.set_ylabel("ILI incidence", color = 'C1')
 ```
 
 :::

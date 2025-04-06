@@ -1,18 +1,18 @@
 
-def get_post_count_ili_sql(ili_kws_sql, control_kws_sql, lang, country_code):    
+def get_post_count_ili_sql(ili_kws_sql, control_kws_sql, lang, country_code, dataset_id):    
 
     post_count_ili_sql = f"""WITH grippe_fr AS
     (
         SELECT DATE_TRUNC(period_start, ISOWEEK) as period_start, SUM(post_count) as post_count
         FROM `digepizcde.bsky_housekeeping.housekeeping` 
-        WHERE query IN ({",".join(ili_kws_sql)}) and langs LIKE '{lang}'
+        WHERE query IN ({",".join(ili_kws_sql)}) and langs LIKE '%{lang}%'
         GROUP BY 1 
     ),
     rest_fr AS
     (
         SELECT DATE_TRUNC(period_start, ISOWEEK) as period_start, SUM(post_count) as post_count
         FROM `digepizcde.bsky_housekeeping.housekeeping` 
-        WHERE query IN ({",".join(control_kws_sql)}) and langs LIKE '{lang}'
+        WHERE query IN ({",".join(control_kws_sql)}) and langs LIKE '%{lang}%'
         GROUP BY period_start 
     ),
 
@@ -57,19 +57,23 @@ def get_post_count_ili_sql(ili_kws_sql, control_kws_sql, lang, country_code):
     ili_fr AS (
     SELECT 
         iso_weekstartdate,
-        ili_case
-    FROM `digepizcde.case_data.who_fluid`
+        ili_case, ili_pop_cov,
+        ari_case, ari_pop_cov
+    FROM `digepizcde.case_data.who_{dataset_id}`
     WHERE country_code = '{country_code}'
     )
 
     SELECT
     t.iso_weekstartdate as date,
     COALESCE(i.ili_case, 0) as ili_case,
+    COALESCE(i.ili_pop_cov, 0) as ili_pop_cov,
+    COALESCE(i.ari_case, 0) as ari_case,
+    COALESCE(i.ari_pop_cov, 0) as ari_pop_cov,
     t.grippe_posts,
     t.rest_posts,
     COALESCE(t.grippe_posts / (t.grippe_posts + t.rest_posts), 0) as norm_post_count
     FROM total t
-    LEFT OUTER JOIN ili_fr i
+    LEFT JOIN ili_fr i
     ON t.iso_weekstartdate = i.iso_weekstartdate
     WHERE t.iso_weekstartdate > '2023-08-01'
     ORDER BY 1
@@ -103,7 +107,7 @@ def get_llm_ili_sql(ili_kws, lang, country_code):
                 SELECT uri
                 FROM `digepizcde.bsky_posts.llm_hints`
                 WHERE ili_related=true
-            ) AND langs LIKE '{lang}'
+            ) AND langs LIKE '%{lang}%'
         ),
 
         total AS (

@@ -8,7 +8,9 @@ import re
 from nltk.stem.snowball import SnowballStemmer
 import fire
 from typing import Optional
-from pyspark.ml.feature import CountVectorizer, CountVectorizerModel
+from pyspark.ml.feature import CountVectorizer
+from nltk.stem.snowball import SnowballStemmer
+
 stopwords_list = set(stopwords.words('french'))
 stemmer = SnowballStemmer("french")
 
@@ -40,9 +42,8 @@ def prepare_french_tweets_for_count_vectorizer(spark, df, vectorizer_params=None
         output_model_path (str, optional): Path to save the CountVectorizerModel. Defaults to "count_vectorizer_model".
 
     Returns:
-        pd.DataFrame: DataFrame with preprocessed text.
+        pyspark.sql.DataFrame: DataFrame with preprocessed text.
     """
-    # Convert to Spark DataFrame
     spark_df = spark.createDataFrame(df)
 
     # 1. Cleaning text (UDF)
@@ -102,9 +103,7 @@ def prepare_french_tweets_for_count_vectorizer(spark, df, vectorizer_params=None
         if col != "iso_weekstartdate":
             weekly_token_counts = weekly_token_counts.withColumnRenamed(col, col.replace("sum(", "").replace(")", ""))
 
-    weekly_token_counts_pd = weekly_token_counts.toPandas()
-
-    return weekly_token_counts_pd
+    return weekly_token_counts
 
 def main(
         query: Optional = None,
@@ -118,7 +117,7 @@ def main(
 
     Args:
         query: str = SQL-style query
-        output_weekly_counts (str): Path to save the processed CSV file.
+        output_weekly_counts (str): Path to save the processed Parquet file.
         input_file (str): Path to the input CSV file.
         vectorizer_params (dict, optional): Parameters to pass to CountVectorizer. Defaults to None.
         output_model_path (str, optional): Path to save the CountVectorizerModel. Defaults to "count_vectorizer_model".
@@ -145,9 +144,8 @@ def main(
     
         print(df.shape)
     
-        weekly_counts_df = prepare_french_tweets_for_count_vectorizer(spark, df, vectorizer_params, output_model_path)  # IMPORTANT: pass a copy to avoid modifying the original DataFrame when using fire
-        weekly_counts_df.to_csv(output_weekly_counts)
-    
+        weekly_counts_df = prepare_french_tweets_for_count_vectorizer(spark, df, vectorizer_params, output_model_path)
+        weekly_counts_df.coalesce(1).write.option("header", "true").csv(output_weekly_counts, mode = 'overwrite')
         print(f"Weekly counts data saved to {output_weekly_counts}")
 
     finally:

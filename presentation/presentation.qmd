@@ -209,12 +209,12 @@ bibliography: "../../dig_epi.bib"
 
 ```{python}
 #| output: true
-ax1 = raw_ili_df.plot( y = 'post_count', color = 'C0')
+ax1 = post_count_ili_df.plot( y = 'grippe_posts', color = 'C0')
 ax1.set_ylabel("bsky post counts", color = 'C0')
 ax1.set_xlabel("week start date")
 
 ax2 = ax1.twinx()
-raw_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
+post_count_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
 ax2.set_ylabel("ILI case count", color = 'C1')
 ```
 
@@ -226,7 +226,7 @@ ax2.set_ylabel("ILI case count", color = 'C1')
 
 ```{python}
 #| output: true
-raw_ili_df.corr()
+post_count_ili_df[['grippe_posts', 'rest_posts', 'ili_case']].corr()
 ```
 
 :::
@@ -241,12 +241,12 @@ raw_ili_df.corr()
 
 ```{python}
 #| output: true
-ax1 = norm_ili_df.plot( y = 'norm_post_count', color = 'C0')
+ax1 = post_count_ili_df.plot( y = 'norm_post_count', color = 'C0')
 ax1.set_ylabel("bsky post counts", color = 'C0')
 ax1.set_xlabel("week start date")
 
 ax2 = ax1.twinx()
-norm_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
+post_count_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
 ax2.set_ylabel("ILI case count", color = 'C1')
 ```
 
@@ -258,7 +258,7 @@ ax2.set_ylabel("ILI case count", color = 'C1')
 
 ```{python}
 #| output: true
-norm_ili_df.corr().round(3)
+post_count_ili_df[['norm_post_count', 'rest_posts', 'ili_case']].corr().round(3)
 ```
 
 :::
@@ -266,14 +266,6 @@ norm_ili_df.corr().round(3)
 ::: 
 
 **It is not as simple as that .... :/**
-
-## Simple linear regression
-
-Idea account for growing user activity and interaction between 
-
-```{python}
-norm_ili_df['year'] = norm_ili_df.index.year
-```
 
 ## LLM annotated post counts, raw
 

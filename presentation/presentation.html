@@ -569,22 +569,22 @@ Heiner Atze, MSc, PhD
 <h2>Raw post counts</h2>
 <div class="columns">
 <div class="column">
-<div id="071df440" class="cell" data-execution_count="8">
-<div class="cell-output cell-output-display" data-execution_count="8">
+<div id="05f0aab3" class="cell" data-execution_count="19">
+<div class="cell-output cell-output-display" data-execution_count="58">
 <pre><code>Text(0, 0.5, 'ILI case count')</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
 <figure>
-<p><img data-src="presentation_files/figure-revealjs/cell-9-output-2.png"></p>
+<p><img data-src="presentation_files/figure-revealjs/cell-20-output-2.png"></p>
 </figure>
 </div>
 </div>
 </div>
 </div><div class="column">
 <h3 id="correlation">Correlation</h3>
-<div id="713c4be9" class="cell" data-execution_count="9">
-<div class="cell-output cell-output-display" data-execution_count="9">
+<div id="38f0f50e" class="cell" data-execution_count="20">
+<div class="cell-output cell-output-display" data-execution_count="59">
 <div>
 <style scoped="">
     .dataframe tbody tr th:only-of-type {
@@ -604,20 +604,29 @@ Heiner Atze, MSc, PhD
 <thead>
 <tr class="header" style="text-align: right;">
 <th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">post_count</th>
+<th data-quarto-table-cell-role="th">grippe_posts</th>
+<th data-quarto-table-cell-role="th">rest_posts</th>
 <th data-quarto-table-cell-role="th">ili_case</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">post_count</td>
-<td>1.00000</td>
-<td>0.75306</td>
+<td data-quarto-table-cell-role="th">grippe_posts</td>
+<td>1.000000</td>
+<td>0.884120</td>
+<td>0.769662</td>
 </tr>
 <tr class="even">
+<td data-quarto-table-cell-role="th">rest_posts</td>
+<td>0.884120</td>
+<td>1.000000</td>
+<td>0.552405</td>
+</tr>
+<tr class="odd">
 <td data-quarto-table-cell-role="th">ili_case</td>
-<td>0.75306</td>
-<td>1.00000</td>
+<td>0.769662</td>
+<td>0.552405</td>
+<td>1.000000</td>
 </tr>
 </tbody>
 </table>
@@ -631,22 +640,22 @@ Heiner Atze, MSc, PhD
 <h2>Normalized post counts</h2>
 <div class="columns">
 <div class="column">
-<div id="c61e1ad5" class="cell" data-execution_count="10">
-<div class="cell-output cell-output-display" data-execution_count="10">
+<div id="d6c2dfa0" class="cell" data-execution_count="21">
+<div class="cell-output cell-output-display" data-execution_count="60">
 <pre><code>Text(0, 0.5, 'ILI case count')</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
 <figure>
-<p><img data-src="presentation_files/figure-revealjs/cell-11-output-2.png"></p>
+<p><img data-src="presentation_files/figure-revealjs/cell-22-output-2.png"></p>
 </figure>
 </div>
 </div>
 </div>
 </div><div class="column">
 <h3 id="correlation-1">Correlation</h3>
-<div id="284b49e5" class="cell" data-execution_count="11">
-<div class="cell-output cell-output-display" data-execution_count="11">
+<div id="76aaaf3c" class="cell" data-execution_count="22">
+<div class="cell-output cell-output-display" data-execution_count="61">
 <div>
 <style scoped="">
     .dataframe tbody tr th:only-of-type {
@@ -666,19 +675,28 @@ Heiner Atze, MSc, PhD
 <thead>
 <tr class="header" style="text-align: right;">
 <th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">ili_case</th>
 <th data-quarto-table-cell-role="th">norm_post_count</th>
+<th data-quarto-table-cell-role="th">rest_posts</th>
+<th data-quarto-table-cell-role="th">ili_case</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">ili_case</td>
+<td data-quarto-table-cell-role="th">norm_post_count</td>
 <td>1.000</td>
-<td>0.128</td>
+<td>0.197</td>
+<td>0.436</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">norm_post_count</td>
-<td>0.128</td>
+<td data-quarto-table-cell-role="th">rest_posts</td>
+<td>0.197</td>
+<td>1.000</td>
+<td>0.552</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">ili_case</td>
+<td>0.436</td>
+<td>0.552</td>
 <td>1.000</td>
 </tr>
 </tbody>
@@ -688,27 +706,28 @@ Heiner Atze, MSc, PhD
 </div>
 </div>
 </div></div>
+<p><strong>It is not as simple as that …. :/</strong></p>
 </section>
 <section id="llm-annotated-post-counts-raw" class="slide level2">
 <h2>LLM annotated post counts, raw</h2>
 <div class="columns">
 <div class="column">
-<div id="79b3292d" class="cell" data-execution_count="12">
-<div class="cell-output cell-output-display" data-execution_count="12">
+<div id="a0e88ebc" class="cell" data-execution_count="23">
+<div class="cell-output cell-output-display" data-execution_count="62">
 <pre><code>Text(0, 0.5, 'ILI case count')</code></pre>
 </div>
 <div class="cell-output cell-output-display">
 <div>
 <figure>
-<p><img data-src="presentation_files/figure-revealjs/cell-13-output-2.png"></p>
+<p><img data-src="presentation_files/figure-revealjs/cell-24-output-2.png"></p>
 </figure>
 </div>
 </div>
 </div>
 </div><div class="column">
 <h3 id="correlation-2">Correlation</h3>
-<div id="506d6501" class="cell" data-execution_count="13">
-<div class="cell-output cell-output-display" data-execution_count="13">
+<div id="9d2068e0" class="cell" data-execution_count="24">
+<div class="cell-output cell-output-display" data-execution_count="63">
 <div>
 <style scoped="">
     .dataframe tbody tr th:only-of-type {

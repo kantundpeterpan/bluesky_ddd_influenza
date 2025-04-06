@@ -6,6 +6,11 @@ from google.oauth2 import service_account
 import pandas as pd
 import matplotlib.pyplot as plt
 import pandas_gbq
+import sys
+sys.path.append("../")
+from analysis.bq_queries import get_post_count_ili_sql, get_llm_ili_sql
+from analysis.feature_eng import *
+from analysis.model_evaluation import *
 credentials = service_account.Credentials.from_service_account_file(
     '../.gc_creds/digepizcde-71333237bf40.json')
 ```
@@ -15,245 +20,139 @@ credentials = service_account.Credentials.from_service_account_file(
 #| output: false
 
 who_subset = 'fluid'
-
 lang = 'fr'
 country_code = "FRA"
 
 ili_kws = [
-    'grippe', 'rhume', 'fievre', 'courbature'
+    'grippe',  'rhume', 'fievre', 'courbature'
 ]
 ili_kws_sql = [f"'{x}'" for x in ili_kws]
-
-raw_ili_sql =f"""WITH posts AS
-  (
-    SELECT 
-      DATE_TRUNC(period_start, ISOWEEK) as iso_weekstartdate, 
-      SUM(post_count) as post_count, 
-    FROM `digepizcde.bsky_housekeeping.housekeeping` 
-    WHERE query IN ({",".join(ili_kws_sql)}) and langs LIKE '%{lang}%'
-    GROUP BY 1
-    ORDER BY 1
-  ),
-
-year_dates AS (
-  -- Generate all dates within the given year range
-  SELECT 
-    day
-  FROM 
-    UNNEST(GENERATE_DATE_ARRAY(DATE('2023-01-01'), DATE('2025-04-05'))) AS day
-),
-iso_weeks AS (
-  -- Truncate each date to the start of its ISO week
-  SELECT 
-    DISTINCT DATE_TRUNC(day, ISOWEEK) AS iso_week_start_date
-  FROM 
-    year_dates
-),
-
-dates AS (
--- Return the unique ISO week start dates
-SELECT 
-  iso_week_start_date as iso_weekstartdate
-FROM 
-  iso_weeks
-ORDER BY 
-  iso_week_start_date
-),
-
-who_ili_fr AS (
-  SELECT
-    iso_weekstartdate,
-    ili_case,
-    ili_outpatients
-  FROM `digepizcde.case_data.who_{who_subset}`
-  WHERE country_code='{country_code}'
-)
-
-SELECT
-  d.iso_weekstartdate as date,
-  COALESCE(p.post_count, 0) as post_count,
-  COALESCE(w.ili_case, 0) as ili_case
-FROM dates d
-LEFT OUTER JOIN posts p
-ON d.iso_weekstartdate = p.iso_weekstartdate
-LEFT OUTER JOIN who_ili_fr w
-ON d.iso_weekstartdate = w.iso_weekstartdate
-WHERE w.iso_weekstartdate > '2023-08-01'
-"""
-```
-
-```{python}
-#| echo: false
-#| output: false
-raw_ili_df = pandas_gbq.read_gbq(
-    raw_ili_sql, credentials=credentials
-).set_index('date')
-raw_ili_df.index = pd.to_datetime(raw_ili_df.index)
 ```
 
 ```{python}
 control_kws = ['travail', 'voiture', 'demain', 'sommeil']
 control_kws_sql = [f"'{x}'" for x in control_kws]
-norm_ili_sql = f"""WITH grippe_fr AS
-  (
-    SELECT period_start, post_count, query
-    FROM `digepizcde.bsky_housekeeping.housekeeping` 
-    WHERE query IN ({",".join(ili_kws_sql)}) and langs LIKE '{lang}' 
-  ),
-rest_fr AS
-  (
-    SELECT period_start, SUM(post_count) as post_count
-    FROM `digepizcde.bsky_housekeeping.housekeeping` 
-    WHERE query IN ({",".join(control_kws_sql)}) and langs LIKE '{lang}'
-    GROUP BY period_start 
-  ),
+```
 
-year_dates AS (
-  -- Generate all dates within the given year range
-  SELECT 
-    day
-  FROM 
-    UNNEST(GENERATE_DATE_ARRAY(DATE('2023-01-01'), DATE('2025-04-05'))) AS day
-),
-iso_weeks AS (
-  -- Truncate each date to the start of its ISO week
-  SELECT 
-    DISTINCT DATE_TRUNC(day, ISOWEEK) AS iso_week_start_date
-  FROM 
-    year_dates
-),
-
-dates AS (
--- Return the unique ISO week start dates
-SELECT 
-  iso_week_start_date as period_start
-FROM 
-  iso_weeks
-ORDER BY 
-  iso_week_start_date
-),
-
-total as (
-  SELECT 
-    DATE_TRUNC(d.period_start, ISOWEEK) as iso_weekstartdate,
-    SUM(COALESCE(g.post_count, 0)) as grippe_posts,
-    SUM(COALESCE(r.post_count, 0)) as rest_posts,
-  FROM dates d
-  LEFT JOIN grippe_fr g
-    on d.period_start = g.period_start
-  LEFT JOIN rest_fr r
-    on d.period_start = r.period_start
-  GROUP BY 1
-),
-
-ili_fr AS (
-  SELECT 
-    iso_weekstartdate,
-    ili_case
-  FROM `digepizcde.case_data.who_fluid`
-  WHERE country_code = '{country_code}'
-)
-
-SELECT
-  t.iso_weekstartdate as date,
-  COALESCE(i.ili_case, 0) as ili_case,
-  t.grippe_posts,
-  t.rest_posts,
-  COALESCE(t.grippe_posts / (t.grippe_posts + t.rest_posts), 0) as norm_post_count
-FROM total t
-LEFT OUTER JOIN ili_fr i
-ON t.iso_weekstartdate = i.iso_weekstartdate
-WHERE t.iso_weekstartdate > '2023-08-01'
-ORDER BY 1
-"""
+```{python}
+post_count_ili_sql = get_post_count_ili_sql(
+    ili_kws_sql, control_kws_sql,
+    lang, country_code
+    )
 ```
 
 ```{python}
 #| echo: false
 #| output: false
-norm_ili_df = pandas_gbq.read_gbq(
-   norm_ili_sql, credentials=credentials
+post_count_ili_df = pandas_gbq.read_gbq(
+   post_count_ili_sql, credentials=credentials
 ).set_index('date')
-norm_ili_df.index = pd.to_datetime(norm_ili_df.index)
+post_count_ili_df.index = pd.to_datetime(post_count_ili_df.index)
+```
+
+
+```{python}
+post_count_ili_df['year'] = post_count_ili_df.index.year.astype("category")
+post_count_ili_df['month'] = post_count_ili_df.index.month.astype("category")
+post_count_ili_df['week'] = post_count_ili_df.index.isocalendar().week.astype("category")
+post_count_ili_df['season'] = post_count_ili_df['month'].apply(assign_season).astype("category")
 ```
 
 ```{python}
-llm_union_snippet = "UNION ALL\n".join([f"SELECT uri, record__created_at FROM `digepizcde.bsky_posts.{kw}`\n" for kw in ili_kws])
+lags = 2
+weeks_ahead = 1
+X = post_count_ili_df.drop(['ili_case', 'norm_post_count', 'rest_posts'], axis = 1)
+lagdfs = []
 
-llm_ili_sql=f"""WITH posts as(
-  {llm_union_snippet}
-),
+for l in range(1, lags+1):
+    lagdf = X.shift(l)
+    lagdf.columns = [f"{c}_lag{l}" for c in lagdf.columns]
+    lagdfs.append(lagdf)
 
-llm_filtered_posts AS(
-    SELECT
-    *,
-    EXTRACT(DATE FROM DATE_TRUNC(p.record__created_at, ISOWEEK)) as iso_weekstartdate
-    FROM posts p
-    WHERE p.uri in (
-        SELECT uri
-        FROM `digepizcde.bsky_posts.llm_hints`
-        WHERE ili_related=true
-    )
-),
+X = pd.concat([X, *lagdfs], axis = 1).dropna().iloc[:-weeks_ahead,:]
+```
 
-total AS (
-    SELECT
-      iso_weekstartdate,
-      COUNT(*) as ili_rel_posts
-    FROM llm_filtered_posts
-    GROUP BY iso_weekstartdate
-),
+```{python}
+y = post_count_ili_df['ili_case'].iloc[lags+weeks_ahead:]
+y = y.divide(y.max())
+```
 
-year_dates AS (
-  -- Generate all dates within the given year range
-  SELECT 
-    day
-  FROM 
-    UNNEST(GENERATE_DATE_ARRAY(DATE('2023-01-01'), DATE('2025-04-05'))) AS day
-),
-iso_weeks AS (
-  -- Truncate each date to the start of its ISO week
-  SELECT 
-    DISTINCT DATE_TRUNC(day, ISOWEEK) AS iso_week_start_date
-  FROM 
-    year_dates
-),
+```{python}
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.model_selection import TimeSeriesSplit
+from sklearn.model_selection import cross_validate
+from sklearn.pipeline import make_pipeline
+```
 
-dates AS (
--- Return the unique ISO week start dates
-SELECT 
-  iso_week_start_date as period_start
-FROM 
-  iso_weeks
-ORDER BY 
-  iso_week_start_date
-),
-
-ili_fr AS (
-  SELECT 
-    iso_weekstartdate,
-    ili_case
-  FROM `digepizcde.case_data.who_fluid`
-  WHERE country_code = '{country_code}'
+```{python}
+ts_cv = TimeSeriesSplit(
+    n_splits=5,
+    gap=0,
+    max_train_size=100,
+    test_size=10,
 )
+```
 
-SELECT
-  t.iso_weekstartdate as date,
-  COALESCE(i.ili_case, 0) as ili_case,
-  COALESCE(t.ili_rel_posts, 0) as post_count
-FROM total t
-LEFT OUTER JOIN ili_fr i
-ON t.iso_weekstartdate = i.iso_weekstartdate
-WHERE t.iso_weekstartdate > '2023-08-01'
-ORDER BY 1
-"""
+```{python}
+gbrt = HistGradientBoostingRegressor(categorical_features="from_dtype", random_state=42)
+categorical_columns = X.columns[X.dtypes == "category"]
+print("Categorical features:", categorical_columns.tolist())
+```
+
+```{python}
+evaluate(gbrt, X, y, cv=ts_cv, model_prop="n_iter_")
+gbrt.fit(X, y)
+```
+
+```{python}
+ypred = pd.Series(gbrt.predict(X), index = y.index) 
+```
+
+```{python}
+y.plot()
+ypred.plot()
+```
+
+```{python}
+month_splines = periodic_spline_transformer(12,6) \
+    .fit_transform(post_count_ili_df[['month']])
+
+# Create a dataframe for the splines
+month_splines_df = pd.DataFrame(
+    month_splines, 
+    index=post_count_ili_df.index,
+     columns=[f'month_spline_{i}' for i in range(month_splines.shape[1])])
+
+# Concatenate the splines with the original dataframe
+post_count_ili_df = pd.concat([post_count_ili_df, month_splines_df], axis=1)
+```
+
+```{python}
+week_splines = periodic_spline_transformer(54, 27) \
+    .fit_transform(post_count_ili_df[['week']])
+
+# Create a dataframe for the splines
+week_splines_df = pd.DataFrame(
+    week_splines, 
+    index=post_count_ili_df.index,
+     columns=[f'week_spline_{i}' for i in range(week_splines.shape[1])])
+
+# Concatenate the splines with the original dataframe
+post_count_ili_df = pd.concat([post_count_ili_df, week_splines_df], axis=1)
+```
+
+
+```{python}
+llm_ili_sql = get_llm_ili_sql(
+    ili_kws, lang, country_code
+)
 ```
 
 ```{python}
 #| echo: false
 #| output: false
 llm_ili_df = pandas_gbq.read_gbq(
-   llm_ili_sql, credentials=credentials
+    llm_ili_sql, credentials=credentials 
 ).set_index('date')
 llm_ili_df.index = pd.to_datetime(llm_ili_df.index)
 ```

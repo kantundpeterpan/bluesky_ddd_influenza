@@ -7,13 +7,24 @@ inputs:
     itemType: STRING
     required: true
     defaults:
-      - voiture
-      - demain
-      - travail
-      - grippe
-      - rhume
-      - fievre
-  
+    #  - voiture
+    #  - demain
+    #  - travail
+    #  - sommeil
+    #  - grippe
+    #  - rhume
+    #  - fievre
+    #  - courbature
+      - Auto
+      - morgen
+      - Arbeit
+      - arbeiten
+      - schlafen
+      - Schlaf
+      - Schnupfen
+      - Fieber
+      - Muskelschmerzen
+      
   - id: start_date_str
     type: STRING
     required: true
@@ -22,6 +33,7 @@ inputs:
   - id: end_date_str
     type: STRING
     required: false
+    defaults: "2025-04-05"
 
   - id: up_to_today
     type: BOOLEAN

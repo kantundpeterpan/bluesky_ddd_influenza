@@ -13,6 +13,10 @@ from nltk.stem.snowball import SnowballStemmer
 
 stopwords_list = set(stopwords.words('french'))
 stemmer = SnowballStemmer("french")
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def clean_text(text):
     """Cleans the text by removing URLs, mentions, hashtags, and non-alphanumeric characters."""
@@ -44,33 +48,47 @@ def prepare_french_tweets_for_count_vectorizer(spark, df, vectorizer_params=None
     Returns:
         pyspark.sql.DataFrame: DataFrame with preprocessed text.
     """
+    logging.info("Starting prepare_french_tweets_for_count_vectorizer")
+
     spark_df = spark.createDataFrame(df)
+    logging.info("Created Spark DataFrame from Pandas DataFrame")
 
     # 1. Cleaning text (UDF)
+    logging.info("Defining clean_text UDF")
     clean_text_udf = udf(clean_text, StringType())
     spark_df = spark_df.withColumn("cleaned_text", clean_text_udf(spark_df["record__text"]))
+    logging.info("Applied clean_text UDF to create 'cleaned_text' column")
 
     # 2. Tokenize and remove stopwords (UDF)
+    logging.info("Defining tokenize_and_remove_stopwords UDF")
     tokenize_and_remove_stopwords_udf = udf(tokenize_and_remove_stopwords, ArrayType(StringType()))
     spark_df = spark_df.withColumn("tokenized_text", tokenize_and_remove_stopwords_udf(spark_df["cleaned_text"]))
+    logging.info("Applied tokenize_and_remove_stopwords UDF to create 'tokenized_text' column")
 
     # 3. Preprocessed Text
+    logging.info("Creating preprocessed text column")
     spark_df = spark_df.withColumn("preprocessed_text", udf(lambda x: " ".join(x), StringType())(spark_df["tokenized_text"]))
+    logging.info("Created the column `preprocessed_text`")
 
     # 4. Count Vectorization
+    logging.info("Initializing CountVectorizer")
     vectorizer = CountVectorizer(**vectorizer_params, inputCol="tokenized_text", outputCol="count_vector")
     model = vectorizer.fit(spark_df)
+    logging.info("Fitted CountVectorizer model")
 
     # Save the CountVectorizerModel
     # model.save(output_model_path)
-    print(f"CountVectorizerModel saved to {output_model_path}")
+    logging.info(f"CountVectorizerModel saved to {output_model_path}")
     # 5. Prepare for aggregation
     vectorized_df = model.transform(spark_df)
+    logging.info("Transformed DataFrame with CountVectorizer model")
     vectorized_df = vectorized_df.withColumn("record__created_at", to_date(vectorized_df["record__created_at"]))
     vectorized_df = vectorized_df.withColumn("iso_weekstartdate", date_trunc("week", vectorized_df["record__created_at"]))
+    logging.info("Created 'record__created_at' and 'iso_weekstartdate' columns")
 
     #Prepare a new table to efficiently store the dense vectors for weekly aggregation
     count_matrix_df = vectorized_df.select("iso_weekstartdate", "count_vector")
+    logging.info("Created `count_matrix_df`")
 
     #Create Struct of Values (ISO Week, dense matrix)
 
@@ -83,26 +101,33 @@ def prepare_french_tweets_for_count_vectorizer(spark, df, vectorizer_params=None
 
     #Apply the function to the table
     count_matrix_df = count_matrix_df.withColumn('dense_vector', to_dense_udf(count_matrix_df['count_vector']))
+    logging.info("Created `dense_vector` column")
 
     #Drop sparse vector as no longer needed
     count_matrix_df = count_matrix_df.drop('count_vector')
+    logging.info("Dropped `count_vector` column")
 
     #Rename the "count_vector_dense" to the vocabulary words (this is required to make the group by operation workable)
     vocabulary = model.vocabulary
     for i, word in enumerate(vocabulary):
-        count_matrix_df = count_matrix_df.withColumn(word, count_matrix_df["dense_vector"].getItem(i).cast("double"))
+        count_matrix_df = count_matrix_df.withColumn(word, count_matrix_df["dense_vector"].getItem(i).cast("integer"))
+    logging.info("Added vocabulary columns")
 
     #Remove the intermediate column "count_vector_dense"
     count_matrix_df = count_matrix_df.drop("dense_vector")
+    logging.info("Dropped `dense_vector` column")
 
     #Group by iso_weekstartdate and sum the words from vocabulary
     weekly_token_counts = count_matrix_df.groupBy("iso_weekstartdate").sum()
-
+    weekly_token_counts = weekly_token_counts.withColumn("iso_weekstartdate", to_date("iso_weekstartdate"))
+    logging.info("Performed weekly aggregation")
     #Convert columns names to be correct (remove sum(.) prefix)
     for col in weekly_token_counts.columns:
         if col != "iso_weekstartdate":
             weekly_token_counts = weekly_token_counts.withColumnRenamed(col, col.replace("sum(", "").replace(")", ""))
+    logging.info("Renamed aggregated columns")
 
+    logging.info("Finished prepare_french_tweets_for_count_vectorizer")
     return weekly_token_counts
 
 def main(
@@ -122,34 +147,68 @@ def main(
         vectorizer_params (dict, optional): Parameters to pass to CountVectorizer. Defaults to None.
         output_model_path (str, optional): Path to save the CountVectorizerModel. Defaults to "count_vectorizer_model".
     """
-
+    import os
+    logging.info("Starting main function")
     # Create SparkSession
     spark = SparkSession.builder.master("local[*]").appName("FrenchTweetsAnalysis").getOrCreate()
     spark.sparkContext.setLogLevel("ERROR")
+    logging.info("SparkSession created")
 
     try:
         if input_file:
+            logging.info(f"Reading input from CSV file: {input_file}")
             df = pd.read_csv(input_file)
+            logging.info(f"Shape of DataFrame read from CSV: {df.shape}")
         elif query:
             from google.oauth2 import service_account
             import pandas_gbq as pdbq
 
             credentials = service_account.Credentials.from_service_account_file(credentials)
-            
+            logging.info(f"Reading data from GBQ with query: {query}")
             df = pdbq.read_gbq(
                 query, credentials=credentials
             )
+            logging.info(f"Shape of DataFrame read from GBQ: {df.shape}")
         else:
-            raise ValueError("Must provide .csv file or GBQ query")
+            error_message = "Must provide .csv file or GBQ query"
+            logging.error(error_message)
+            raise ValueError(error_message)
     
         print(df.shape)
     
         weekly_counts_df = prepare_french_tweets_for_count_vectorizer(spark, df, vectorizer_params, output_model_path)
-        weekly_counts_df.coalesce(1).write.option("header", "true").csv(output_weekly_counts, mode = 'overwrite')
+
+        # Write to a temporary directory
+        temp_dir = "temp_weekly_counts"
+        logging.info(f"Writing weekly counts to temporary directory: {temp_dir}")
+        weekly_counts_df.coalesce(1).write.option("header", "true").csv(temp_dir, mode = 'overwrite')
+        
+        # Find the output file (there should be only one)
+        part_file = [f for f in os.listdir(temp_dir) if f.startswith("part-")][0]
+        logging.info(f"Found part file: {part_file}")
+        
+        # Rename the file to the desired output name
+        output_file_path = os.path.join(temp_dir, part_file)
+        final_output_path = output_weekly_counts
+        os.rename(output_file_path, final_output_path)
+        logging.info(f"Renamed part file to: {final_output_path}")
+        # Remove the temporary directory
+        import shutil
+        shutil.rmtree(temp_dir)
+        logging.info(f"Removed temporary directory: {temp_dir}")
+
         print(f"Weekly counts data saved to {output_weekly_counts}")
+        logging.info(f"Weekly counts data saved to {output_weekly_counts}")
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}", exc_info=True)
+        raise
 
     finally:
         spark.stop()
+        logging.info("SparkSession stopped")
+        logging.info("Finished main function")
+        
 
 if __name__ == '__main__':
     fire.Fire(main)

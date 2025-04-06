@@ -1,0 +1,17 @@
+sources:
+  - name: bsky_posts_fr
+    database: digepizcde
+    schema: bsky_posts
+    tables:
+      - name: grippe
+      - name: rhume
+      - name: fievre
+      - name: courbature
+  
+models:
+  - name: bsky_all_posts_fr
+    sources:
+      - source('bsky_posts', 'grippe')
+      - source('bsky_posts', 'rhume')
+      - source('bsky_posts', 'fievre')
+      - source('bsky_posts', 'courbature')

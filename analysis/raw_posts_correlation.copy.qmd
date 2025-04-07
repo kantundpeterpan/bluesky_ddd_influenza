@@ -1,0 +1,234 @@
+```{python}
+#| label: imports
+#| echo: false
+#| output: false
+from google.oauth2 import service_account
+import pandas as pd
+import matplotlib.pyplot as plt
+import pandas_gbq
+import sys
+import os
+sys.path.append(os.path.abspath("../"))
+from analysis.bq_queries import get_post_count_ili_sql, get_llm_ili_sql
+from analysis.feature_eng import *
+from analysis.model_evaluation import *
+credentials = service_account.Credentials.from_service_account_file(
+    '../.gc_creds/digepizcde-71333237bf40.json')
+```
+
+```{python}
+#| label: sql_raw_post counts
+#| output: false
+
+who_subset = 'flunet'
+lang = 'fr'#'fr'
+country_code = 'FRA' #"FRA"
+
+ili_kws = [
+    'grippe',  'rhume', 'fievre', 'courbature'
+    # "Grippe", 'grippe', 'Schnupfen', 'Fieber', 'Muskelschmerzen'
+]
+ili_kws_sql = [f"'{x}'" for x in ili_kws]
+```
+
+```{python}
+control_kws = ['travail', 'voiture', 'demain', 'sommeil']
+# control_kws = ['Auto', 'morgen', 'Arbeit', 'arbeiten', 'schlafen', 'Schlaf']
+control_kws_sql = [f"'{x}'" for x in control_kws]
+```
+
+```{python}
+post_count_ili_sql ="SELECT * FROM `digepizcde.bsky_ili.bsky_ili_fr`"
+```
+
+```{python}
+#| echo: false
+#| output: false
+post_count_ili_df = pandas_gbq.read_gbq(
+   post_count_ili_sql, credentials=credentials
+).set_index('date')
+post_count_ili_df.index = pd.to_datetime(post_count_ili_df.index)
+```
+
+
+```{python}
+post_count_ili_df['year'] = post_count_ili_df.index.year.astype("category")
+post_count_ili_df['month'] = post_count_ili_df.index.month.astype("category")
+post_count_ili_df['week'] = post_count_ili_df.index.isocalendar().week.astype("category")
+post_count_ili_df['season'] = post_count_ili_df['month'].apply(assign_season).astype("category")
+```
+
+```{python}
+def filter_vocab(df, min_weeks: int = 10, min_mention: int = 10):
+
+    col_idx = df.ge(min_mention).sum(axis = 0).ge(min_weeks).values
+    
+    return col_idx
+
+from sklearn.preprocessing import OneHotEncoder
+```
+
+```{python}
+weekly_words = pd.read_csv("./weekly_token_counts.csv", parse_dates=['iso_weekstartdate']) \
+        .set_index("iso_weekstartdate")
+weekly_words = weekly_words.loc[:,filter_vocab(weekly_words, min_weeks=24)]
+post_count_ili_df = post_count_ili_df.merge(weekly_words, left_index=True, right_index=True)
+```
+
+
+```{python}
+ohe = OneHotEncoder(sparse_output = False)
+ohe.fit(post_count_ili_df[['year', 'month', 'week', 'season']])
+seasonal_encoded = pd.DataFrame(
+    ohe.fit_transform(post_count_ili_df[['year', 'month', 'week', 'season']]),
+    index = post_count_ili_df.index, columns = ohe.get_feature_names_out()
+)
+post_count_ili_df = pd.concat([
+    post_count_ili_df.drop(['year', 'month', 'week', 'season'], axis = 1),
+    seasonal_encoded
+], axis = 1)
+```
+
+```{python}
+lags = 2
+weeks_ahead = 1
+```
+
+```{python}
+ytrain = post_count_ili_df['ili_incidence'].loc[:cutoff_date].iloc[lags+weeks_ahead:]
+ytrain = ytrain.divide(ytrain.max())
+ytest = post_count_ili_df['ili_incidence'].loc[cutoff_date:].iloc[weeks_ahead:]
+ytest = ytest.divide(ytest.max())
+# y = y.divide(y.max())
+# ytrain = y.loc[:cutoff_date]
+# ytest = y.loc[cutoff_date:]
+```
+
+```{python}
+# post_count_ili_df = weekly_words.loc[post_count_ili_df.index]
+```
+
+```{python}
+# X = post_count_ili_df.drop([
+#     'ili_case', 'ari_case', 'ili_incidence', 'ari_incidence',
+#     'ili_pop_cov', 'ari_pop_cov',# 'rest_posts', 'grippe_posts'
+#     ], axis = 1)
+X = post_count_ili_df
+lagdfs = []
+
+for l in range(1, lags+1):
+    lagdf = X.shift(l)
+    lagdf.columns = [f"{c}_lag{l}" for c in lagdf.columns]
+    lagdfs.append(lagdf)
+
+X = pd.concat([X, *lagdfs], axis = 1).dropna()#.iloc[:-weeks_ahead,:]
+cutoff_date = '2024-08-01'
+Xtrain = X.loc[:cutoff_date].iloc[:-weeks_ahead]
+Xtest = X.loc[cutoff_date:].iloc[:-weeks_ahead]
+```
+
+
+
+```{python}
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.model_selection import TimeSeriesSplit
+from sklearn.model_selection import cross_validate
+from sklearn.linear_model import Ridge
+from sklearn.pipeline import make_pipeline
+```
+
+```{python}
+ts_cv = TimeSeriesSplit(
+    n_splits=5,
+    gap=0,
+    max_train_size=100,
+    test_size=3,
+)
+```
+
+```{python}
+gbrt = HistGradientBoostingRegressor(categorical_features="from_dtype", random_state=42)
+categorical_columns = X.columns[X.dtypes == "category"]
+print("Categorical features:", categorical_columns.tolist())
+```
+
+```{python}
+evaluate(gbrt, Xtrain, ytrain, cv=ts_cv, model_prop="n_iter_")
+gbrt.fit(Xtrain, ytrain)
+```
+
+```{python}
+ytrainpred = pd.Series(gbrt.predict(Xtrain), index = ytrain.index)
+ytestpred = pd.Series(gbrt.predict(Xtest), index = ytest.index) 
+```
+
+```{python}
+# post_count_ili_df.ili_incidence.plot(label = 'True incidence')
+ytrain.plot()
+ytrainpred.plot()
+ytest.plot()
+ytestpred.plot()
+```
+
+```{python}
+from sklearn.inspection import permutation_importance
+
+result = permutation_importance(
+    gbrt, Xtest, ytest, n_repeats=25, random_state=42, n_jobs=-1
+)
+
+sorted_importances_idx = result.importances_mean.argsort()
+importances = pd.DataFrame(
+    result.importances[sorted_importances_idx].T,
+    columns=X.columns[sorted_importances_idx],
+).iloc[:,-5:]
+ax = importances.plot.box(vert=False, whis=10)
+ax.set_title("Permutation Importances")
+ax.axvline(x=0, color="k", linestyle="--")
+ax.set_xlabel("Decrease in accuracy score")
+ax.figure.tight_layout()
+```
+
+```{python}
+month_splines = periodic_spline_transformer(12,6) \
+    .fit_transform(post_count_ili_df[['month']])
+
+# Create a dataframe for the splines
+month_splines_df = pd.DataFrame(
+    month_splines, 
+    index=post_count_ili_df.index,
+     columns=[f'month_spline_{i}' for i in range(month_splines.shape[1])])
+
+# Concatenate the splines with the original dataframe
+post_count_ili_df = pd.concat([post_count_ili_df, month_splines_df], axis=1)
+```
+
+```{python}
+week_splines = periodic_spline_transformer(54, 27) \
+    .fit_transform(post_count_ili_df[['week']])
+
+# Create a dataframe for the splines
+week_splines_df = pd.DataFrame(
+    week_splines, 
+    index=post_count_ili_df.index,
+     columns=[f'week_spline_{i}' for i in range(week_splines.shape[1])])
+
+# Concatenate the splines with the original dataframe
+post_count_ili_df = pd.concat([post_count_ili_df, week_splines_df], axis=1)
+```
+
+
+```{python}
+llm_ili_sql = get_llm_ili_sql(
+    ili_kws, lang, country_code
+)
+```
+
+```{python}
+#| echo: false
+#| output: false
+llm_ili_df = pandas_gbq.read_gbq(
+    llm_ili_sql, credentials=credentials 
+).set_index('date')
+llm_ili_df.index = pd.to_datetime(llm_ili_df.index)
+```

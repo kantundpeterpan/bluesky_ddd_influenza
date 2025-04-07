@@ -10,7 +10,7 @@
 <link href="presentation_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.5.54">
 
-  <meta name="author" content="Heiner Atze, MSc, PhD">
+  <meta name="author" content="Heiner Atze">
   <meta name="dcterms.date" content="2025-04-10">
   <title>Beyond twitter</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -30,6 +30,71 @@
       margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
       vertical-align: middle;
     }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     /* CSS for citations */
     div.csl-bib-body { }
     div.csl-entry {
@@ -52,6 +117,7 @@
       margin-left: 2em;
     }  </style>
   <link rel="stylesheet" href="presentation_files/libs/revealjs/dist/theme/quarto.css">
+  <link rel="stylesheet" href="./pres.css">
   <link href="presentation_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
   <link href="presentation_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
   <link href="presentation_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
@@ -342,6 +408,9 @@
       margin-right: 0; 
     }
   </style>
+  <script src="presentation_files/libs/quarto-diagram/mermaid.min.js"></script>
+  <script src="presentation_files/libs/quarto-diagram/mermaid-init.js"></script>
+  <link href="presentation_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
   
   <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
@@ -357,7 +426,7 @@
 <div class="quarto-title-authors">
 <div class="quarto-title-author">
 <div class="quarto-title-author-name">
-Heiner Atze, MSc, PhD 
+Heiner Atze 
 </div>
         <p class="quarto-title-affiliation">
             Digital Epidemiology 2025, Hasselt University
@@ -367,6 +436,15 @@ Heiner Atze, MSc, PhD
 
   <p class="date">2025-04-10</p>
 </section>
+<section id="outline" class="title-slide slide level1 center">
+<h1>Outline</h1>
+<ul>
+<li class="fragment">The <code>bluesky</code> social network</li>
+<li class="fragment">Data accessiblity via the <code>bluesky</code> API</li>
+<li class="fragment">Extraction and Analysis of ILI related <code>bluesky</code> messages</li>
+</ul>
+</section>
+
 <section>
 <section id="introduction" class="title-slide slide level1 center">
 <h1>Introduction</h1>
@@ -377,10 +455,10 @@ Heiner Atze, MSc, PhD
 <div class="columns">
 <div class="column">
 <ul>
-<li>microblogging platform</li>
-<li>similar to <code>twitter</code> in user experience</li>
-<li>decentralized</li>
-<li>open source</li>
+<li class="fragment">microblogging platform</li>
+<li class="fragment">similar to <code>twitter</code> in user experience</li>
+<li class="fragment">decentralized</li>
+<li class="fragment">open source</li>
 </ul>
 </div><div class="column">
 <p><img data-src="./figures/bluesky_logo.png"></p>
@@ -389,13 +467,13 @@ Heiner Atze, MSc, PhD
 <section id="decentralization-and-democratization-of-content-algorithms-longnote" class="slide level2 scrollable">
 <h2>Decentralization and Democratization of content algorithms <sup>1</sup></h2>
 <ul>
-<li><p>Decentralized User Identifier (DID)</p>
+<li class="fragment"><p>Decentralized User Identifier (DID)</p>
 <ul>
-<li>immutable, associated with human readable user handle</li>
+<li class="fragment">immutable, associated with human readable user handle</li>
 </ul></li>
-<li><p>Personal Data servers (PSDs)</p></li>
-<li><p>DIDs and affiliated contents are portable between PSDs</p></li>
-<li><p>Users can choose, prioritize and develop feed generators and content labelers</p></li>
+<li class="fragment"><p>Personal Data servers (PSDs)</p></li>
+<li class="fragment"><p>DIDs and affiliated contents are portable between PSDs</p></li>
+<li class="fragment"><p>Users can choose, prioritize and develop feed generators and content labelers</p></li>
 </ul>
 <aside><ol class="aside-footnotes"><li id="fn1"><p><span class="citation" data-cites="balduf2024looking">Balduf et al. (<a href="" role="doc-biblioref" onclick="return false;">2024</a>)</span></p></li></ol></aside></section>
 <section id="development-of-user-activity-ref1" class="slide level2 scrollable">
@@ -403,32 +481,45 @@ Heiner Atze, MSc, PhD
 <div class="columns">
 <div class="column">
 <ul>
-<li>current estimate: ca. 33 Millions active users</li>
-<li>user base expanded in bursts after key events:
+<li class="fragment">current estimate: ca. 33 Millions active users</li>
+<li class="fragment">user base expanded in bursts after key events:
 <ul>
-<li>2022: acquisition of <code>twitter</code> by Elon Musk</li>
-<li>2024: ban of <code>X</code> in Brazil, presidential election in the US</li>
+<li class="fragment">2022: acquisition of <code>twitter</code> by Elon Musk</li>
+<li class="fragment">2024: ban of <code>X</code> in Brazil, presidential election in the US</li>
 </ul></li>
 </ul>
 </div><div class="column">
 <p><img data-src="./figures/bsky_guardian.png"></p>
 </div></div>
+<aside class="notes">
+
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 <aside><ol class="aside-footnotes"><li id="fn2"><p><span class="citation" data-cites="explodingtopicsBlueskyUser">Duarte</span>, <span class="citation" data-cites="balduf2024looking">Balduf et al. (<a href="" role="doc-biblioref" onclick="return false;">2024</a>)</span></p></li></ol></aside></section>
 <section id="literature-addressing-bluesky" class="slide level2">
 <h2>Literature addressing <code>bluesky</code></h2>
 <ul>
-<li><p>Google scholar search : “bluesky” AND “social” since 2022</p></li>
-<li><p>43 articles</p></li>
-<li><p>main topics:</p>
+<li class="fragment"><p>Google scholar search : “bluesky” AND “social” since 2022</p></li>
+<li class="fragment"><p>43 articles</p></li>
+<li class="fragment"><p>main topics:</p>
 <ul>
-<li>decentralized social network architecture</li>
-<li>user migration from <code>X</code> to <code>bluesky</code> 2024</li>
-<li>network structure and dynamics</li>
+<li class="fragment">decentralized social network architecture</li>
+<li class="fragment">user migration from <code>X</code> to <code>bluesky</code> 2024</li>
+<li class="fragment">network structure and dynamics</li>
 </ul></li>
-<li><p>no results for</p>
+<li class="fragment"><p>no results for</p>
 <ul>
-<li>“bluesky” AND “disease”</li>
-<li>“bluesky” AND “epidemiology”</li>
+<li class="fragment">“bluesky” AND “disease”</li>
+<li class="fragment">“bluesky” AND “epidemiology”</li>
 </ul></li>
 </ul>
 </section></section>
@@ -440,50 +531,54 @@ Heiner Atze, MSc, PhD
 <section id="bluesky-api" class="slide level2">
 <h2>bluesky API</h2>
 <ul>
-<li>publicly accessible for free</li>
-<li>extensive documenation at https://docs.bsky.app/docs/category/http-reference</li>
+<li class="fragment">publicly accessible for free</li>
+<li class="fragment">extensive documenation at https://docs.bsky.app/docs/category/http-reference</li>
 </ul>
 </section>
 <section id="searchposts-api-method" class="slide level2">
 <h2><code>searchPosts</code> API method</h2>
 <ul>
-<li><p><a href="https://docs.bsky.app/docs/api/app-bsky-feed-search-posts">API documentation</a></p></li>
-<li><p>selected parameters:</p>
+<li class="fragment"><p><a href="https://docs.bsky.app/docs/api/app-bsky-feed-search-posts">API documentation</a></p></li>
+<li class="fragment"><p>selected parameters:</p>
 <ul>
-<li><code>q</code>: search query</li>
-<li><code>since</code>, <code>until</code>: defining search period</li>
+<li class="fragment"><code>q</code>: search query</li>
+<li class="fragment"><code>since</code>, <code>until</code>: defining search period</li>
 </ul></li>
-<li><p>deterministic search</p></li>
-<li><p>allows exhaustive sampling</p></li>
+<li class="fragment"><p><code>limit</code>: max. 100 posts</p></li>
+<li class="fragment"><p>deterministic search</p></li>
+<li class="fragment"><p>allows exhaustive sampling</p></li>
 </ul>
 </section>
 <section id="getprofiles" class="slide level2">
 <h2><code>getProfiles</code></h2>
 <ul>
-<li>allows to retrieve the author profile information</li>
-<li>for reference, not used in this project</li>
+<li class="fragment">allows to retrieve the author profile information</li>
+<li class="fragment">for reference, not used in this project</li>
 </ul>
 </section>
 <section id="post-metadata" class="slide level2">
 <h2>Post metadata</h2>
 <ul>
-<li><p>defined in the <a href="https://atproto.blue/en/latest/atproto/atproto_client.models.app.bsky.feed.defs.html#atproto_client.models.app.bsky.feed.defs.PostView">SDK documentation</a></p></li>
-<li><p>fields (selection):</p>
+<li class="fragment"><p>defined in the <a href="https://atproto.blue/en/latest/atproto/atproto_client.models.app.bsky.feed.defs.html#atproto_client.models.app.bsky.feed.defs.PostView">SDK documentation</a></p></li>
+<li class="fragment"><p>fields (selection):</p>
 <ul>
-<li><code>uri</code>: unique post identifier</li>
-<li><code>author</code>: contains <code>did</code> which allows to retrieve user profile</li>
-<li><code>record</code>: contains the text and time information of the message</li>
-<li><code>embedded</code>: any embedded media (images, other posts, etc …)</li>
+<li class="fragment"><code>uri</code>: unique post identifier</li>
+<li class="fragment"><code>author</code>: contains <code>did</code> which allows to retrieve user profile</li>
+<li class="fragment"><code>record</code>: contains the text and time information of the message
+<ul>
+<li class="fragment"><code>langs</code>: language(s) detected by the <code>bluesky</code> server</li>
 </ul></li>
-<li><p>in contrary to former <code>twitter</code> post metadata, no geoinformation</p></li>
+<li class="fragment"><code>embedded</code>: any embedded media (images, other posts, etc …)</li>
+</ul></li>
+<li class="fragment"><p>in contrary to former <code>twitter</code> post metadata, no geoinformation</p></li>
 </ul>
 </section>
 <section id="user-information" class="slide level2">
 <h2>User information</h2>
 <ul>
-<li><p><code>Feedgens</code></p></li>
-<li><p><code>Labelers</code></p></li>
-<li><p>no geo information</p></li>
+<li class="fragment"><p><code>Feedgens</code></p></li>
+<li class="fragment"><p><code>Labelers</code></p></li>
+<li class="fragment"><p>no geo information</p></li>
 </ul>
 </section></section>
 <section>
@@ -491,100 +586,98 @@ Heiner Atze, MSc, PhD
 <h1>Project</h1>
 
 </section>
-<section id="outline" class="slide level2">
+<section id="outline-1" class="slide level2">
 <h2>Outline</h2>
 <p><strong><code>bluesky</code> post data for digital disease surveillance</strong></p>
 <div class="fragment">
 <p><strong>Implementation of a continuous surveillance pipeline</strong></p>
 </div>
 </section></section>
-<section id="methods" class="title-slide slide level1 center">
-<h1>Methods</h1>
-
-</section>
-
 <section>
 <section id="data-extraction" class="title-slide slide level1 center">
 <h1>Data extraction</h1>
 
 </section>
-<section id="symptom-related-message-extraction" class="slide level2">
-<h2>Symptom related message extraction</h2>
+<section id="ili-symptom-related-message-extraction" class="slide level2 scrollable">
+<h2>ILI symptom related message extraction</h2>
 <ul>
-<li>focused on French <code>bluesky</code> posts (data volume constraint)</li>
-<li>extraction using list of keywords
+<li class="fragment"><p>focused on French <code>bluesky</code> posts (data volume constraint)</p></li>
+<li class="fragment"><p>extraction using list of keywords <sup>1</sup></p>
 <ul>
-<li>grippe (flu, influenza)</li>
-<li>rhume (common cold)</li>
-<li>fievre (fever)</li>
-<li>courbature (muscle pain)</li>
+<li class="fragment">grippe (<em>flu, influenza</em>)</li>
+<li class="fragment">rhume (<em>common cold</em>)</li>
+<li class="fragment">fievre (<em>fever</em>)</li>
+<li class="fragment">courbature (<em>muscle pain</em>)</li>
 </ul></li>
-<li>extraction of
+<li class="fragment"><p>extraction of</p>
 <ul>
-<li>complete message data for further language processing</li>
-<li></li>
+<li class="fragment">complete message data for further language processing</li>
+<li class="fragment">counts for time series analysis</li>
 </ul></li>
 </ul>
-</section>
+<aside class="notes">
+<ul>
+<li>data volume constraint</li>
+<li>timezone problem</li>
+<li>assumption: neglegible amount of data from French speaking countries in Africa</li>
+</ul>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+<aside><ol class="aside-footnotes"><li id="fn3"><p><span class="citation" data-cites="SignoriniTwitter2011">Signorini (<a href="" role="doc-biblioref" onclick="return false;">2011</a>)</span></p></li></ol></aside></section>
 <section id="basal-network-activity" class="slide level2">
 <h2>Basal network activity</h2>
 <ul>
-<li>probing of the basal network activity using keywords
+<li class="fragment">Keywords:
 <ul>
-<li>travail (<em>work</em>)</li>
-<li>demain (<em>tomorrow</em>)</li>
-<li>voiture (<em>car</em>)</li>
-<li>sommeil (<em>sleep</em>)</li>
+<li class="fragment">travail (<em>work</em>)</li>
+<li class="fragment">demain (<em>tomorrow</em>)</li>
+<li class="fragment">voiture (<em>car</em>)</li>
+<li class="fragment">sommeil (<em>sleep</em>)</li>
 </ul></li>
-<li>post counts aggregated by day</li>
+<li class="fragment">post counts aggregated by day</li>
 </ul>
 </section>
 <section id="case-data" class="slide level2">
 <h2>Case data</h2>
 <ul>
-<li>data downloaded from <code>WHO Flumart</code> = FluID: ILI case data
+<li class="fragment">data downloaded from <code>WHO Flumart</code>
 <ul>
-<li>FluNet: virological data</li>
-</ul></li>
-</ul>
-</section>
-<section id="data-processing-for-time-series-extraction" class="slide level2">
-<h2>Data processing for time series extraction</h2>
-<ul>
-<li>Normalization of ILI post counts by basal network activity</li>
-<li></li>
-<li>LLM</li>
-<li><a href="https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32018D0945&amp;from=EN#page=24">ECDC case definition</a>
-<ul>
-<li>LLM vs.&nbsp;random post selection</li>
+<li class="fragment">FluID: ILI case data <!-- - FluNet: virological data --></li>
 </ul></li>
 </ul>
 </section></section>
-<section>
 <section id="results" class="title-slide slide level1 center">
 <h1>Results</h1>
 
 </section>
-<section id="raw-post-counts" class="slide level2">
-<h2>Raw post counts</h2>
-<div class="columns">
-<div class="column">
-<div id="21f5c191" class="cell" data-execution_count="19">
-<div class="cell-output cell-output-display" data-execution_count="19">
-<pre><code>Text(0, 0.5, 'ILI case count')</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-<figure>
-<p><img data-src="presentation_files/figure-revealjs/cell-20-output-2.png"></p>
-</figure>
-</div>
-</div>
-</div>
-</div><div class="column">
-<h3 id="correlation">Correlation</h3>
-<div id="073c6e04" class="cell" data-execution_count="20">
-<div class="cell-output cell-output-display" data-execution_count="20">
+
+<section>
+<section id="post-count-time-series" class="title-slide slide level1 center">
+<h1>Post count time series</h1>
+
+</section>
+<section id="raw-posts-counts" class="slide level2">
+<h2>Raw posts counts</h2>
+<p>Data analysis starting from 2023-08-01</p>
+
+<img data-src="presentation_files/figure-revealjs/fig-raw-count-ilivscontrol-output-1.png" id="fig-raw-count-ilivscontrol" class="r-stretch quarto-figure-center"><p class="caption">
+</p></section>
+<section id="keyword-posts-vs.-ili-incidence" class="slide level2">
+<h2>Keyword posts <em>vs.</em> ILI incidence</h2>
+
+<img data-src="presentation_files/figure-revealjs/fig-raw-count-grippe-output-1.png" id="fig-raw-count-grippe" class="r-stretch quarto-figure-center"><p class="caption">
+</p><div style="font-size:smaller">
+<div id="1c18c929" class="cell" data-execution_count="13">
+<div class="cell-output cell-output-display" data-execution_count="63">
 <div>
 <style scoped="">
     .dataframe tbody tr th:only-of-type {
@@ -604,58 +697,426 @@ Heiner Atze, MSc, PhD
 <thead>
 <tr class="header" style="text-align: right;">
 <th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">grippe_posts</th>
-<th data-quarto-table-cell-role="th">rest_posts</th>
-<th data-quarto-table-cell-role="th">ili_case</th>
+<th data-quarto-table-cell-role="th">ILI posts</th>
+<th data-quarto-table-cell-role="th">Control posts</th>
+<th data-quarto-table-cell-role="th">ILI incidence</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">grippe_posts</td>
-<td>1.000000</td>
-<td>0.878014</td>
-<td>0.775933</td>
+<td data-quarto-table-cell-role="th">ILI posts</td>
+<td>1.000</td>
+<td>0.878</td>
+<td>0.775</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">rest_posts</td>
-<td>0.878014</td>
-<td>1.000000</td>
-<td>0.568114</td>
+<td data-quarto-table-cell-role="th">Control posts</td>
+<td>0.878</td>
+<td>1.000</td>
+<td>0.567</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">ili_case</td>
-<td>0.775933</td>
-<td>0.568114</td>
-<td>1.000000</td>
+<td data-quarto-table-cell-role="th">ILI incidence</td>
+<td>0.775</td>
+<td>0.567</td>
+<td>1.000</td>
 </tr>
 </tbody>
 </table>
 
 </div>
+</div>
+</div>
+</div>
+<aside class="notes">
+<ul>
+<li>ILI post and ILI inc well correlated</li>
+<li>correlation is higher for ILI posts, indicating signal improvement</li>
+</ul>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="normalized-keyword-posts-vs.-ili-incidence" class="slide level2">
+<h2>Normalized keyword posts <em>vs.</em> ILI incidence</h2>
+
+<img data-src="presentation_files/figure-revealjs/fig-norm-count-grippe-output-1.png" id="fig-norm-count-grippe" class="r-stretch quarto-figure-center"><p class="caption">
+</p><div class="columns">
+<div class="column" style="font-size:smaller">
+<ul>
+<li class="fragment">Normalization of the number ILI keyword containing messages using the number of control messages</li>
+</ul>
+</div><div class="column">
+<div style="font-size:smaller">
+<div id="32d0d16e" class="cell" data-execution_count="15">
+<div class="cell-output cell-output-display" data-execution_count="65">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+
+<table class="dataframe caption-top" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header" style="text-align: right;">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">ILI posts</th>
+<th data-quarto-table-cell-role="th">Control posts</th>
+<th data-quarto-table-cell-role="th">ILI cases</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">ILI posts</td>
+<td>1.000</td>
+<td>0.063</td>
+<td>0.517</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">Control posts</td>
+<td>0.063</td>
+<td>1.000</td>
+<td>0.567</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">ILI cases</td>
+<td>0.517</td>
+<td>0.567</td>
+<td>1.000</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</div>
+</div></div>
+<aside class="notes">
+<p>test test test</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="machine-learning" class="title-slide slide level1 center">
+<h1>Machine Learning</h1>
+
+</section>
+<section id="features" class="slide level2">
+<h2>Features</h2>
+<ul>
+<li class="fragment">no. of control posts</li>
+<li class="fragment">no. of posts containing ILI related keyword</li>
+<li class="fragment">time and seasonal features
+<ul>
+<li class="fragment">year</li>
+<li class="fragment">month</li>
+<li class="fragment">week</li>
+<li class="fragment">season</li>
+</ul></li>
+<li class="fragment">lag terms</li>
+</ul>
+<p>all aggregated by week</p>
+</section>
+<section id="gradient-boosted-trees" class="slide level2 scrollable">
+<h2>Gradient boosted trees</h2>
+<div class="columns">
+<div class="column">
+<ul>
+<li class="fragment">Sequential learning of weak learners.</li>
+<li class="fragment">Iteratively corrects errors of previous models</li>
+<li class="fragment">Combines predictions using weighted averaging.</li>
+<li class="fragment">Robust to outliers</li>
+<li class="fragment">Handles non-linear relationships</li>
+</ul>
+</div><div class="column">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="./figures/working-of-gradient-boosting-algorithm.png"></p>
+<figcaption>Gradient boosting <sup>1</sup></figcaption>
+</figure>
+</div>
+</div></div>
+<aside class="notes">
+<ul>
+<li>ensemble learning model</li>
+<li>popular for time series</li>
+</ul>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+<aside><ol class="aside-footnotes"><li id="fn4"><p><span class="citation" data-cites="pythongeeksGradientBoosting">Team</span></p></li></ol></aside></section>
+<section id="model-evaluation" class="slide level2 scrollable">
+<h2>Model evaluation</h2>
+<div class="columns">
+<div class="column">
+<ul>
+<li class="fragment">Time series split validation
+<ul>
+<li class="fragment">retains temporal information</li>
+<li class="fragment">mimics continuous data acquisition</li>
+</ul></li>
+</ul>
+</div><div class="column">
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="./figures/timeseries_split.png"></p>
+<figcaption>Expanding window time series validation <sup>1</sup></figcaption>
+</figure>
+</div>
+</div></div>
+<aside class="notes">
+<ul>
+<li>Classical CV on time series data potentially does not respect the temporal structure</li>
+<li>possibility of data leakage (training on “data from the future”)</li>
+<li>TimeSeries split: instantiation of initial training set and test set, iteratively merging the test set into the training set, the test set data is always in the future with respect to the training data</li>
+</ul>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+<aside><ol class="aside-footnotes"><li id="fn5"><p><span class="citation" data-cites="stackexchangeApplyStacking"><span>“<span>H</span>ow to Apply <span>S</span>tacking Cross Validation for Time-Series Data? — Datascience.stackexchange.com”</span></span></p></li></ol></aside></section>
+<section id="predictions-and-metrics" class="slide level2">
+<h2>Predictions and metrics</h2>
+<div>
+<ul>
+<li>Target variable: weeky ILI incidence <span class="math inline">\(w_{t+1}\)</span></li>
+</ul>
+</div>
+<div class="fragment">
+<div class="columns">
+<div class="column">
+<p><img data-src="../analysis/histgrad_nosplit_restrict_figure//predictions.png"></p>
+</div><div class="column" style="max-width:25%">
+<h3 id="metrics">Metrics</h3>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: center;">MAE*</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Training</td>
+<td style="text-align: center;"><span class="math inline">\(23.79\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Validation</td>
+<td style="text-align: center;"><span class="math inline">\(80.61\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>* <span style="font-size:smaller">Mean absolute error, incidence per 100,000</span></p>
+</div></div>
+<aside class="notes">
+<ul>
+<li>small sample size: Generalization error approximation by validation</li>
+</ul>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="permutation-importance" class="slide level2">
+<h2>Permutation importance</h2>
+<div class="columns">
+<div class="column" style="max-width:25%">
+<ul>
+<li>model agnostic feature importance procedure</li>
+<li>random shuffling of single input features</li>
+</ul>
+</div><div class="column" style="max-width:25%">
+<p><img data-src="../analysis/histgrad_nosplit_restrict_figure/feature_importance.png"></p>
+</div></div>
+<aside class="notes">
+<ul>
+<li>season</li>
+</ul>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section></section>
+<section>
+<section id="can-ai-help" class="title-slide slide level1 center">
+<h1>Can “AI” help?</h1>
+
+</section>
+<section id="idea" class="slide level2">
+<h2>Idea</h2>
+<div>
+<div class="callout callout-none no-icon callout-style-simple">
+<div class="callout-body">
+<div class="callout-content">
+<ul>
+<li>Filter posts using large a large language model (LLM)</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<h3 id="how">How?</h3>
+<ul>
+<li class="fragment">provide case definition in the system prompt</li>
+<li class="fragment">use <code>json</code> structured output option for convenient data processing</li>
+</ul>
+</section>
+<section id="prompt-and-output" class="slide level2">
+<h2>Prompt and output</h2>
+<div class="columns">
+<div class="column">
+<h3 id="prompt-extract">Prompt extract</h3>
+<pre><code>Analyze the following tweet-like message to determine if it describes the user's own influenza-like illness (ILI). ILI is defined by:
+
+- Fever ≥38°C (100°F) **AND**
+
+- At least one respiratory symptom (cough or sore throat) **PLUS**
+
+- Additional systemic symptoms (headache, muscle aches, chills, fatigue, nasal congestion)
+
+...
+
+
+
+{ ... bluesky message dynamically inserted here ... }
+</code></pre>
+</div><div class="column">
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource json number-lines code-with-copy"><code class="sourceCode json"><span id="cb2-1"><a href=""></a><span class="er">//</span> <span class="er">symptom</span> <span class="er">extraction</span> <span class="er">schema</span></span>
+<span id="cb2-2"><a href=""></a><span class="fu">{</span></span>
+<span id="cb2-3"><a href=""></a>    <span class="dt">"ili_related"</span> <span class="fu">:{</span></span>
+<span id="cb2-4"><a href=""></a>        <span class="dt">"type"</span><span class="fu">:</span><span class="st">"bool"</span></span>
+<span id="cb2-5"><a href=""></a>    <span class="fu">},</span></span>
+<span id="cb2-6"><a href=""></a>    <span class="er">symptoms</span><span class="fu">:{</span></span>
+<span id="cb2-7"><a href=""></a>        <span class="dt">"type"</span><span class="fu">:</span><span class="st">"array"</span><span class="fu">,</span></span>
+<span id="cb2-8"><a href=""></a>        <span class="dt">"items"</span><span class="fu">:{</span></span>
+<span id="cb2-9"><a href=""></a>            <span class="dt">"type"</span><span class="fu">:</span><span class="st">"string"</span></span>
+<span id="cb2-10"><a href=""></a>        <span class="fu">}</span></span>
+<span id="cb2-11"><a href=""></a>    <span class="fu">}</span></span>
+<span id="cb2-12"><a href=""></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource json number-lines code-with-copy"><code class="sourceCode json"><span id="cb3-1"><a href=""></a><span class="er">//</span> <span class="er">symptom</span> <span class="er">extraction</span> <span class="er">example</span></span>
+<span id="cb3-2"><a href=""></a><span class="fu">{</span></span>
+<span id="cb3-3"><a href=""></a>    <span class="dt">"ili_related"</span> <span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href=""></a>    <span class="er">symptoms</span><span class="fu">:{</span></span>
+<span id="cb3-5"><a href=""></a>      <span class="er">['fever'</span><span class="fu">,</span> <span class="er">'headache']</span></span>
+<span id="cb3-6"><a href=""></a>    <span class="fu">}</span></span>
+<span id="cb3-7"><a href=""></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div>
+<p>Extraction using google Gemini API</p>
+</section>
+<section id="examples" class="slide level2">
+<h2>Examples</h2>
+<h3 id="ili-positive">ILI positive</h3>
+<div class="columns">
+<div class="column" style="max-width:40%">
+<h4 id="original-message">Original message</h4>
+<div id="739dec41" class="cell" data-execution_count="17">
+<div class="cell-output cell-output-stdout">
+<pre><code>C'est...la grippe A.
+Le vaccin semble avoir réduit la durée de la fièvre et de la fatigue.</code></pre>
+</div>
+</div>
+</div><div class="column" style="max-width:40%">
+<h4 id="machine-translation">Machine translation</h4>
+<div id="0551bf04" class="cell" data-execution_count="18">
+<div class="cell-output cell-output-stdout">
+<pre><code>It's ... flu A.
+The vaccine seems to have reduced the duration of fever and fatigue.</code></pre>
+</div>
+</div>
+</div><div class="column" style="max-width:20%">
+<h4 id="llm-symptoms">LLM symptoms</h4>
+<div id="b606317c" class="cell" data-execution_count="19">
+<div class="cell-output cell-output-stdout">
+<pre><code>fièvre,fatigue</code></pre>
+</div>
+</div>
+</div></div>
+<h3 id="ili-negative">ILI negative</h3>
+<div class="columns">
+<div class="column" style="max-width:40%">
+<div id="73f15676" class="cell" data-execution_count="21">
+<div class="cell-output cell-output-stdout">
+<pre><code>Grippe aviaire&nbsp;: les coupes budgétaires de Trump amplifient la&nbsp;menace pandémique www.lepoint.fr/tiny/1-2586310 #Santé via @lepoint.fr</code></pre>
+</div>
+</div>
+</div><div class="column" style="max-width:40%">
+<div id="75fd50c9" class="cell" data-execution_count="22">
+<div class="cell-output cell-output-stdout">
+<pre><code>Aviary flu: Trump's budget cuts amplify the pandemic threat www.lepoint.fr/tiny/1-2586310 #health via @lepoint.fr</code></pre>
+</div>
+</div>
+</div><div class="column" style="max-width:20%">
+<div id="fcde3bc5" class="cell" data-execution_count="23">
+<div class="cell-output cell-output-stdout">
+<pre><code>nan</code></pre>
 </div>
 </div>
 </div></div>
 </section>
-<section id="normalized-post-counts" class="slide level2">
-<h2>Normalized post counts</h2>
-<div class="columns">
-<div class="column">
-<div id="a8c2c762" class="cell" data-execution_count="21">
-<div class="cell-output cell-output-display" data-execution_count="21">
-<pre><code>Text(0, 0.5, 'ILI case count')</code></pre>
-</div>
-<div class="cell-output cell-output-display">
-<div>
-<figure>
-<p><img data-src="presentation_files/figure-revealjs/cell-22-output-2.png"></p>
-</figure>
-</div>
-</div>
-</div>
-</div><div class="column">
-<h3 id="correlation-1">Correlation</h3>
-<div id="433b90fa" class="cell" data-execution_count="22">
-<div class="cell-output cell-output-display" data-execution_count="22">
+<section id="llm-annotated-post-counts" class="slide level2">
+<h2>LLM annotated post counts</h2>
+
+<img data-src="presentation_files/figure-revealjs/fig-llm-count-grippe-output-1.png" id="fig-llm-count-grippe" class="r-stretch quarto-figure-center"><p class="caption">
+</p><h3 id="correlation">Correlation</h3>
+<div id="dc2ab574" class="cell" data-execution_count="25">
+<div class="cell-output cell-output-display" data-execution_count="75">
 <div>
 <style scoped="">
     .dataframe tbody tr th:only-of-type {
@@ -675,28 +1136,28 @@ Heiner Atze, MSc, PhD
 <thead>
 <tr class="header" style="text-align: right;">
 <th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">norm_post_count</th>
-<th data-quarto-table-cell-role="th">rest_posts</th>
-<th data-quarto-table-cell-role="th">ili_case</th>
+<th data-quarto-table-cell-role="th">LLM ILI posts</th>
+<th data-quarto-table-cell-role="th">ILI incidence</th>
+<th data-quarto-table-cell-role="th">Control posts</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">norm_post_count</td>
+<td data-quarto-table-cell-role="th">LLM ILI posts</td>
 <td>1.000</td>
-<td>0.063</td>
-<td>0.515</td>
+<td>0.800</td>
+<td>0.804</td>
 </tr>
 <tr class="even">
-<td data-quarto-table-cell-role="th">rest_posts</td>
-<td>0.063</td>
+<td data-quarto-table-cell-role="th">ILI incidence</td>
+<td>0.800</td>
 <td>1.000</td>
-<td>0.568</td>
+<td>0.567</td>
 </tr>
 <tr class="odd">
-<td data-quarto-table-cell-role="th">ili_case</td>
-<td>0.515</td>
-<td>0.568</td>
+<td data-quarto-table-cell-role="th">Control posts</td>
+<td>0.804</td>
+<td>0.567</td>
 <td>1.000</td>
 </tr>
 </tbody>
@@ -705,70 +1166,105 @@ Heiner Atze, MSc, PhD
 </div>
 </div>
 </div>
-</div></div>
-<p><strong>It is not as simple as that …. :/</strong></p>
+</section></section>
+<section id="conclusion" class="title-slide slide level1 center">
+<h1>Conclusion</h1>
+<ul>
+<li class="fragment"><code>bluesky</code> = promising data source</li>
+<li class="fragment">more data needed = patience</li>
+</ul>
 </section>
-<section id="llm-annotated-post-counts-raw" class="slide level2">
-<h2>LLM annotated post counts, raw</h2>
-<div class="columns">
-<div class="column">
-<div id="1fcbbb0f" class="cell" data-execution_count="23">
-<div class="cell-output cell-output-display" data-execution_count="23">
-<pre><code>Text(0, 0.5, 'ILI case count')</code></pre>
-</div>
-<div class="cell-output cell-output-display">
+
+<section>
+<section id="outlook" class="title-slide slide level1 center">
+<h1>Outlook</h1>
+<ul>
+<li class="fragment"><p>investigate impact of LLM filtering on model performance</p></li>
+<li class="fragment"><p>modeling of weekly ILI incidence based on message content</p></li>
+<li class="fragment"><p>continuous data acquisition pipeline (WIP)</p></li>
+<li class="fragment"><p>User localization based on profile</p></li>
+<li class="fragment"><p>monitoring of bursts in user activity crucial</p></li>
+<li class="fragment"><p>repeating the analysis for another country (<em>e.g.</em> Germany)</p></li>
+</ul>
+<aside class="notes">
+<p>(bag of words or more sophisticated)</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="pipeline-wip" class="slide level2">
+<h2>Pipeline (WIP)</h2>
+<div class="cell" data-reveal="true" data-layout-align="default">
+<div class="cell-output-display">
 <div>
-<figure>
-<p><img data-src="presentation_files/figure-revealjs/cell-24-output-2.png"></p>
-</figure>
-</div>
-</div>
-</div>
-</div><div class="column">
-<h3 id="correlation-2">Correlation</h3>
-<div id="2887e1a4" class="cell" data-execution_count="24">
-<div class="cell-output cell-output-display" data-execution_count="24">
+<p></p><figure class=""><p></p>
 <div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
+<pre class="mermaid mermaid-js">graph LR
+    subgraph kestra 
+        dlt(dlt) --- posts
+        llm --- bqstaging
+        llm -- annotation --&gt; bqstaging
+        posts --&gt; bqstaging[&lt;b&gt;GBQ&lt;/b&gt; \n stage area \n 1 table per kw]
+        dlt -- housekeeping --&gt; count
+        dlt -- case data --&gt; who_tables
+        dlt -- case data --&gt; cdc_tables
+        subgraph BigQuery data lake
+          bqstaging
+          who_tables
+          cdc_tables
+          count[post counts table]
+        end
+        bqstaging --- dbt
+        who_tables --- dbt
+        cdc_tables --- dbt
+        count --- dbt
+        dbt --&gt; bq[Google \n BigQuery]
+        subgraph BigQuery data warehoue
+          bq
+        end
+    end
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-
-<table class="dataframe caption-top" data-quarto-postprocess="true" data-border="1">
-<thead>
-<tr class="header" style="text-align: right;">
-<th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">ili_case</th>
-<th data-quarto-table-cell-role="th">post_count</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">ili_case</td>
-<td>1.000</td>
-<td>0.396</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">post_count</td>
-<td>0.396</td>
-<td>1.000</td>
-</tr>
-</tbody>
-</table>
-
+    bsky[bsky API] --&gt; dlt
+    WHO --&gt; dlt
+    CDC --&gt; dlt
+    bq --&gt; looker[Looker studio \n dashboard]
+    bq -- python --&gt; stat1[Statistical analysis]
+    bq -- python --&gt; stat2[Machine learning, modeling]
+</pre>
+</div>
+<p></p></figure><p></p>
 </div>
 </div>
 </div>
-</div></div>
+<p>Open source implementation</p>
+<div>
+<h4 id="data-ingestion">Data ingestion</h4>
+<ul>
+<li>python</li>
+<li>data load tool (<code>dlt</code>)</li>
+</ul>
+<h4 id="data-storage-and-sql">Data storage and SQL</h4>
+<ul>
+<li>Google Big Query</li>
+</ul>
+<h4 id="data-modeling">Data modeling</h4>
+<ul>
+<li>data build tool (<code>dbt</code>)</li>
+</ul>
+<h4 id="workflow-orchestration">Workflow orchestration</h4>
+<ul>
+<li><code>kestra</code></li>
+</ul>
+<p>available at: (https://github.com/kantundpeterpan/bluesky_ddd_influenza)</p>
+</div>
 </section>
 <section id="refs" class="slide level2">
 <h2>Bibliography</h2>
@@ -783,6 +1279,15 @@ Balduf, Leonhard, Saidu Sokoto, Onur Ascigil, Gareth Tyson, Björn Scheuermann, 
 </div>
 <div id="ref-explodingtopicsBlueskyUser" class="csl-entry" role="listitem">
 Duarte, Fabio. <span>“<span>B</span>luesky <span>U</span>ser <span>A</span>ge, <span>G</span>ender, &amp; <span>D</span>emographics (2025).”</span> <a href="https://explodingtopics.com/blog/bluesky-users" class="uri">https://explodingtopics.com/blog/bluesky-users</a>.
+</div>
+<div id="ref-stackexchangeApplyStacking" class="csl-entry" role="listitem">
+<span>“<span>H</span>ow to Apply <span>S</span>tacking Cross Validation for Time-Series Data? — Datascience.stackexchange.com.”</span> <a href="https://datascience.stackexchange.com/questions/41378/how-to-apply-stacking-cross-validation-for-time-series-data" class="uri">https://datascience.stackexchange.com/questions/41378/how-to-apply-stacking-cross-validation-for-time-series-data</a>.
+</div>
+<div id="ref-SignoriniTwitter2011" class="csl-entry" role="listitem">
+Signorini, Alberto Maria AND Polgreen, Alessio AND Segre. 2011. <span>“The Use of Twitter to Track Levels of Disease Activity and Public Concern in the u.s. During the Influenza a H1N1 Pandemic.”</span> <em>PLOS ONE</em> 6 (5): 1–10. <a href="https://doi.org/10.1371/journal.pone.0019467">https://doi.org/10.1371/journal.pone.0019467</a>.
+</div>
+<div id="ref-pythongeeksGradientBoosting" class="csl-entry" role="listitem">
+Team, PythonGeeks. <span>“<span>G</span>radient <span>B</span>oosting <span>A</span>lgorithm in <span>M</span>achine <span>L</span>earning - <span>P</span>ython <span>G</span>eeks — Pythongeeks.org.”</span> <a href="https://pythongeeks.org/gradient-boosting-algorithm-in-machine-learning/" class="uri">https://pythongeeks.org/gradient-boosting-algorithm-in-machine-learning/</a>.
 </div>
 </div>
 </section></section>

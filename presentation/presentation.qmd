@@ -1,7 +1,7 @@
 ---
 title: "Beyond twitter"
 subtitle: "Exploring `bluesky.social` for digital disease detection and prototyping a data extraction pipeline for ILI surveillance"
-author: "Heiner Atze, MSc, PhD"
+author: "Heiner Atze"
 institute: Digital Epidemiology 2025, Hasselt University
 date: "April 10, 2025"
 format:
@@ -11,8 +11,11 @@ format:
     preview-links: true
     toc: false
     toc-title: Outline
-    incremental: false
+    incremental: true
     scrollable: true
+    aspectratio: 16x9
+    css: "./pres.css"
+    page-layout: full
 
   beamer:
     toc: true
@@ -24,6 +27,7 @@ format:
     incremental: false
 
 jupyter: digepi
+restart_kernel: true
 execute: 
   cache: false 
   echo: false
@@ -33,6 +37,11 @@ bibliography: "../../dig_epi.bib"
 ---
 
 {{< include ../analysis/raw_posts_correlation.qmd >}}
+
+
+- The `bluesky` social network
+- Data accessiblity via the `bluesky` API
+- Extraction and Analysis of ILI related `bluesky` messages
 
 # Introduction
 
@@ -91,6 +100,10 @@ bibliography: "../../dig_epi.bib"
 
 [^ref1]: @explodingtopicsBlueskyUser, @balduf2024looking
 
+::: notes
+
+:::
+
 ## Literature addressing `bluesky`
 
 - Google scholar search : "bluesky" AND "social" since 2022
@@ -120,6 +133,7 @@ bibliography: "../../dig_epi.bib"
   - `q`: search query
   - `since`, `until`: defining search period  
 
+- `limit`: max. 100 posts
 - deterministic search
 - allows exhaustive sampling
 
@@ -136,6 +150,7 @@ bibliography: "../../dig_epi.bib"
   - `uri`: unique post identifier
   - `author`: contains `did` which allows to retrieve user profile
   - `record`: contains the text and time information of the message
+    - `langs`: language(s) detected by the `bluesky` server
   - `embedded`: any embedded media (images, other posts, etc ...)
 
 - in contrary to former `twitter` post metadata, no geoinformation
@@ -157,26 +172,31 @@ bibliography: "../../dig_epi.bib"
 
 **Implementation of a continuous surveillance pipeline**
 
-# Methods
-
 # Data extraction
 
-## Symptom related message extraction
+## ILI symptom related message extraction
 
 - focused on French `bluesky` posts (data volume constraint)
-- extraction using list of keywords
-  - grippe (flu, influenza)
-  - rhume (common cold)
-  - fievre (fever)
-  - courbature (muscle pain)
+
+- extraction using list of keywords ^[@SignoriniTwitter2011]
+  - grippe (*flu, influenza*)
+  - rhume (*common cold*)
+  - fievre (*fever*)
+  - courbature (*muscle pain*)
 
 - extraction of 
   - complete message data for further language processing
-  - 
+  - counts for time series analysis
+
+::: notes
+- data volume constraint
+- timezone problem
+- assumption: neglegible amount of data from French speaking countries in Africa
+:::
 
 ## Basal network activity
 
-- probing of the basal network activity using keywords
+- Keywords:
   - travail (*work*)
   - demain (*tomorrow*)
   - voiture (*car*)
@@ -187,116 +207,492 @@ bibliography: "../../dig_epi.bib"
 ## Case data
 
   - data downloaded from `WHO Flumart`
-    = FluID: ILI  case data
-    - FluNet: virological data
-
-## Data processing for time series extraction
-
-- Normalization of ILI post counts by basal network activity
-- 
-
-- LLM
-- [ECDC case definition](https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:32018D0945&from=EN#page=24)
-  - LLM vs. random post selection
+    - FluID: ILI case data
+    <!-- - FluNet: virological data -->
 
 # Results
 
-## Raw post counts
+# Post count time series
 
-::: {.columns}
+## Raw posts counts
 
-::: {.column}
+Data analysis starting from 2023-08-01
 
 ```{python}
 #| output: true
-ax1 = post_count_ili_df.plot( y = 'grippe_posts', color = 'C0')
-ax1.set_ylabel("bsky post counts", color = 'C0')
-ax1.set_xlabel("week start date")
+#| label: fig-raw-count-ilivscontrol
 
-ax2 = ax1.twinx()
-post_count_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
-ax2.set_ylabel("ILI case count", color = 'C1')
+fontsize = 40
+yoffset_fontsize=25
+fontsize_legend = 35
+linewidth = 4
+vlinecolor = 'salmon'
+import matplotlib.ticker as mticker
+
+fig, (ax1, ax2)= plt.subplots(nrows=2, sharex = True, figsize = (16,9))
+_ = post_count_ili_df.plot(ax = ax1, y = 'grippe_posts', color = 'C0', linewidth = linewidth)
+ax1.set_ylabel("bsky post counts", color = 'C0', fontsize = fontsize)
+# ax1.set_xlabel("week start date", fontsize = fontsize)
+ax1.tick_params(axis='both', which='major', labelsize=fontsize)
+ax1.yaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True))
+ax1.ticklabel_format(style="sci", axis="y", scilimits=(0,0))
+ax1.yaxis.get_offset_text().set_fontsize(yoffset_fontsize)
+ax1.legend(['ILI posts'], loc='upper left', fontsize=fontsize_legend)
+ax1.axvline(pd.to_datetime('2024-11-05'), color=vlinecolor, linestyle='--', linewidth=3)
+ax1.annotate('US election',
+    xy=(pd.to_datetime('2024-11-05') - pd.Timedelta(days=7),
+    ax1.get_ylim()[1]*0.9),
+    rotation=0, fontsize=20, color='salmon', ha='right', fontweight = 'bold')
+
+post_count_ili_df.plot(y = 'rest_posts', ax = ax2, color = "C1", linewidth = linewidth)
+_ = ax2.set_ylabel("Control posts", color = 'C1', fontsize = fontsize, rotation = 270, labelpad = 40)
+ax2.yaxis.set_label_position("right")
+ax2.tick_params(axis='both', which='major', labelsize=fontsize)
+ax2.yaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True))
+ax2.ticklabel_format(style="sci", axis="y", scilimits=(0,0))
+ax2.yaxis.get_offset_text().set_fontsize(yoffset_fontsize)
+ax2.legend(['Control posts'], loc='upper left', fontsize=fontsize_legend)
+ax2.axvline(pd.to_datetime('2024-11-05'), color=vlinecolor, linestyle='--', linewidth=2)
+
+# fig.tight_layout()
 ```
 
+## Keyword posts *vs.* ILI incidence 
+
+```{python}
+#| output: true
+#| label: fig-raw-count-grippe
+
+fig, ax1= plt.subplots(nrows=1, figsize = (25,9))
+_ = post_count_ili_df.plot(ax = ax1, y = 'grippe_posts', color = 'C0', linewidth = linewidth)
+ax1.set_ylabel("bsky post counts", color = 'C0', fontsize = fontsize)
+# ax1.set_xlabel("week start date", fontsize = fontsize)
+ax1.tick_params(axis='both', which='major', labelsize=fontsize)
+ax1.yaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True))
+ax1.ticklabel_format(style="sci", axis="y", scilimits=(0,0))
+ax1.yaxis.get_offset_text().set_fontsize(yoffset_fontsize)
+ax1.legend(['ILI posts'], loc='upper left', fontsize=fontsize_legend)
+
+
+ax2 = ax1.twinx()
+post_count_ili_df.plot(y = 'ili_incidence', ax = ax2, color = "C1", linewidth = linewidth)
+_ = ax2.set_ylabel("weekly ILI incidence \n / 100,000", color = 'C1', fontsize = fontsize)
+ax2.tick_params(axis='both', which='major', labelsize=fontsize)
+ax2.yaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True))
+ax2.ticklabel_format(style="sci", axis="y", scilimits=(0,0))
+ax2.yaxis.get_offset_text().set_fontsize(yoffset_fontsize)
+ax2.legend(['ILI incidence'], loc='upper center', fontsize=fontsize_legend)
+```
+ 
+
+:::{style="font-size:smaller"}
+```{python}
+#| output: true
+_ = post_count_ili_df[['grippe_posts', 'rest_posts', 'ili_incidence']]
+_.columns = ['ILI posts', 'Control posts', 'ILI incidence']
+_.corr().round(3)
+```
+:::
+
+::: notes
+- ILI post and ILI inc well correlated
+- correlation is higher for ILI posts, indicating signal improvement
+::: 
+
+## Normalized keyword posts *vs.* ILI incidence 
+
+```{python}
+#| output: true
+#| label: fig-norm-count-grippe
+fig, ax1= plt.subplots(nrows=1, figsize = (25,9))
+_ = post_count_ili_df.plot(ax = ax1, y = 'norm_post_count', color = 'C0', linewidth = linewidth)
+ax1.set_ylabel("normalized bsky \n post counts", color = 'C0', fontsize = fontsize)
+# ax1.set_xlabel("week start date", fontsize = fontsize)
+ax1.tick_params(axis='both', which='major', labelsize=fontsize)
+ax1.yaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True))
+ax1.ticklabel_format(style="sci", axis="y", scilimits=(0,0))
+ax1.yaxis.get_offset_text().set_fontsize(yoffset_fontsize)
+ax1.legend(['ILI posts'], loc='upper left', fontsize=fontsize_legend)
+
+
+ax2 = ax1.twinx()
+post_count_ili_df.plot(y = 'ili_incidence', ax = ax2, color = "C1", linewidth = linewidth)
+_ = ax2.set_ylabel("ILI incidence", color = 'C1', fontsize = fontsize)
+ax2.tick_params(axis='both', which='major', labelsize=fontsize)
+ax2.yaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True))
+ax2.ticklabel_format(style="sci", axis="y", scilimits=(0,0))
+ax2.yaxis.get_offset_text().set_fontsize(yoffset_fontsize)
+ax2.legend(['ILI incidence'], loc='upper center', fontsize=fontsize_legend)
+```
+::: {.columns }
+
+::: {.column style="font-size:smaller"}
+- Normalization of the number ILI keyword containing messages using the number of control messages
 :::
 
 ::: {.column}
-
-### Correlation
-
+:::{style="font-size:smaller"}
 ```{python}
 #| output: true
-post_count_ili_df[['grippe_posts', 'rest_posts', 'ili_case']].corr()
+_ = post_count_ili_df[['norm_post_count', 'rest_posts', 'ili_incidence']]
+_.columns = ['ILI posts', 'Control posts', 'ILI cases']
+_.corr().round(3)
 ```
+:::
 
 :::
 
 ::: 
 
-## Normalized post counts
+
+::: notes
+test test test
+:::
+
+# Machine Learning
+
+## Features
+
+- no. of control posts
+- no. of posts containing ILI related keyword
+- time and seasonal features
+  - year
+  - month
+  - week 
+  - season
+- lag terms
+
+all aggregated by week
+
+
+
+## Gradient boosted trees
+::: {.columns}
+::: {.column}
+- Sequential learning of weak learners.
+- Iteratively corrects errors of previous models 
+- Combines predictions using weighted averaging.
+- Robust to outliers 
+- Handles non-linear relationships
+:::
+::: {.column}
+![Gradient boosting ^[@pythongeeksGradientBoosting]](./figures/working-of-gradient-boosting-algorithm.png)
+:::
+:::
+
+::: notes
+- ensemble learning model
+- popular for time series
+:::
+
+## Model evaluation
+
+::: {.columns}
+::: {.column}
+- Time series split validation
+  - retains temporal information 
+  - mimics continuous data acquisition
+:::
+::: {.column}
+![Expanding window time series validation ^[@stackexchangeApplyStacking]](./figures/timeseries_split.png)
+:::
+::: 
+
+::: notes
+- Classical CV on time series data potentially does not respect the temporal structure
+- possibility of data leakage (training on "data from the future")
+- TimeSeries split: instantiation of initial training set and test set, iteratively merging the test set into the training set, the test set data is always in the future with respect to the training data
+:::
+
+
+
+## Predictions and metrics
+
+:::{.nonincremental}
+- Target variable: weeky ILI incidence $w_{t+1}$
+:::
+
+. . .
+
+::: {.columns}
+::: {.column}
+![](../analysis/histgrad_nosplit_restrict_figure/predictions.png)
+:::
+
+::: {.column style="max-width:25%"}
+### Metrics
+| Dataset    | MAE*       |
+| :--------- | :--------------------------: |
+| Training   | $23.79$                       |
+| Validation | $80.61$                       |
+
+\* [Mean absolute error, incidence per 100,000]{style="font-size:smaller"} 
+:::
+::: 
+
+::: notes
+- small sample size: Generalization error approximation by validation
+:::
+
+## Permutation importance
 
 ::: {.columns}
 
-::: {.column}
+::: {.column} .nonincremental style="max-width:25%"}
+- model agnostic feature importance procedure
+- random shuffling of single input features
+:::
 
-```{python}
-#| output: true
-ax1 = post_count_ili_df.plot( y = 'norm_post_count', color = 'C0')
-ax1.set_ylabel("bsky post counts", color = 'C0')
-ax1.set_xlabel("week start date")
-
-ax2 = ax1.twinx()
-post_count_ili_df.plot(y = 'ili_incidence', ax = ax2, color = "C1")
-ax2.set_ylabel("ILI incidence", color = 'C1')
-```
+::: {.column style="max-width:75%"}
+![](../analysis/histgrad_nosplit_restrict_figure/feature_importance.png)
+:::
 
 :::
 
+::: notes
+- season
+:::
+
+
+# Can "AI" help?
+
+## Idea
+
+::: {.callout .nonincremental}
+- Filter posts using large a large language model (LLM)
+:::
+
+### How?
+
+- provide case definition in the system prompt
+- use `json` structured output option for convenient data processing
+
+## Prompt and output
+
+::: {.columns}
 ::: {.column}
+### Prompt extract
+```
+Analyze the following tweet-like message to determine if it describes the user's own influenza-like illness (ILI). ILI is defined by:
+
+- Fever ≥38°C (100°F) **AND**
+
+- At least one respiratory symptom (cough or sore throat) **PLUS**
+
+- Additional systemic symptoms (headache, muscle aches, chills, fatigue, nasal congestion)
+
+...
+
+
+
+{ ... bluesky message dynamically inserted here ... }
+
+```
+:::
+::: {.column}
+```json
+// symptom extraction schema
+{
+    "ili_related" :{
+        "type":"bool"
+    },
+    symptoms:{
+        "type":"array",
+        "items":{
+            "type":"string"
+        }
+    }
+}
+```
+
+```json
+// symptom extraction example
+{
+    "ili_related" :true,
+    symptoms:{
+      ['fever', 'headache']
+    }
+}
+```
+:::
+::: 
+
+Extraction using google Gemini API
+
+## Examples
+
+### ILI positive
+```{python}
+sample = pd.read_csv("./llm_samples/ili_pos.csv").sample(1)
+```
+
+::: {.columns}
+::: {.column style="max-width:40%"}
+
+#### Original message
+```{python}
+#| output: true
+print(sample.record__text.iloc[0])
+```
+:::
+::: {.column style="max-width:40%"}
+#### Machine translation
+```{python}
+#| output: true
+print(await translate_french_to_english(
+  sample.record__text.iloc[0]
+  )
+)
+```
+:::
+::: {.column style="max-width:20%"}
+#### LLM symptoms
+```{python}
+#| output: true
+print(sample.symptoms.iloc[0])
+```
+:::
+:::
+
+
+### ILI negative
+```{python}
+sample = pd.read_csv("./llm_samples/ili_neg.csv").iloc[:1]
+```
+
+::: {.columns}
+::: {.column style="max-width:40%"}
+```{python}
+#| output: true
+print(sample.record__text.iloc[0])
+```
+:::
+::: {.column style="max-width:40%"}
+```{python}
+#| output: true
+print(await translate_french_to_english(
+  sample.record__text.iloc[0]
+  )
+)
+```
+:::
+:::: {.column style="max-width:20%"}
+```{python}
+#| output: true
+print(sample.symptoms.iloc[0])
+```
+:::
+:::
+
+## LLM annotated post counts 
+```{python}
+#| output: true
+#| label: fig-llm-count-grippe
+fig, ax1= plt.subplots(nrows=1, figsize = (25,9))
+_ = llm_ili_df.plot(ax = ax1, y = 'ili_rel_posts', color = 'C0', linewidth = linewidth)
+ax1.set_ylabel("LLM filtered bsky \n post counts", color = 'C0', fontsize = fontsize)
+# ax1.set_xlabel("week start date", fontsize = fontsize)
+ax1.tick_params(axis='both', which='major', labelsize=fontsize)
+ax1.yaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True))
+ax1.ticklabel_format(style="sci", axis="y", scilimits=(0,0))
+ax1.yaxis.get_offset_text().set_fontsize(yoffset_fontsize)
+ax1.legend(['ILI posts (LLM)'], loc='upper left', fontsize=fontsize_legend)
+ax1.set_xlabel("")
+
+ax2 = ax1.twinx()
+llm_ili_df.plot(y = 'ili_incidence', ax = ax2, color = "C1", linewidth = linewidth)
+_ = ax2.set_ylabel("ILI incidence", color = 'C1', fontsize = fontsize)
+ax2.tick_params(axis='both', which='major', labelsize=fontsize)
+ax2.yaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True))
+ax2.ticklabel_format(style="sci", axis="y", scilimits=(0,0))
+ax2.yaxis.get_offset_text().set_fontsize(yoffset_fontsize)
+ax2.legend(['ILI incidence'], loc='upper center', fontsize=fontsize_legend)
+```
+
 
 ### Correlation
 
 ```{python}
 #| output: true
-post_count_ili_df[['norm_post_count', 'rest_posts', 'ili_case']].corr().round(3)
+_ = llm_ili_df[['ili_rel_posts', 'ili_incidence', 'rest_posts']].rename(columns = {
+  'ili_rel_posts':'LLM ILI posts', 'ili_incidence':'ILI incidence', 'rest_posts':'Control  posts'
+})
+_.corr().round(3)
 ```
 
+# Conclusion
+
+- `bluesky` = promising data source
+- more data needed = patience
+
+# Outlook
+
+- investigate impact of LLM filtering on model performance
+- modeling of weekly ILI incidence based on message content 
+
+- continuous data acquisition pipeline (WIP)
+- User localization based on profile
+- monitoring of bursts in user activity crucial
+- repeating the analysis for another country (*e.g.* Germany)
+
+::: notes
+(bag of words or more sophisticated)
 :::
 
-::: 
+## Pipeline (WIP)
 
-**It is not as simple as that .... :/**
+```{mermaid}
+graph LR
+    subgraph kestra 
+        dlt(dlt) --- posts
+        llm --- bqstaging
+        llm -- annotation --> bqstaging
+        posts --> bqstaging[<b>GBQ</b> \n stage area \n 1 table per kw]
+        dlt -- housekeeping --> count
+        dlt -- case data --> who_tables
+        dlt -- case data --> cdc_tables
+        subgraph BigQuery data lake
+          bqstaging
+          who_tables
+          cdc_tables
+          count[post counts table]
+        end
+        bqstaging --- dbt
+        who_tables --- dbt
+        cdc_tables --- dbt
+        count --- dbt
+        dbt --> bq[Google \n BigQuery]
+        subgraph BigQuery data warehoue
+          bq
+        end
+    end
 
-## LLM annotated post counts, raw
-
-::: {.columns}
-
-::: {.column}
-
-```{python}
-#| output: true
-ax1 = llm_ili_df.plot( y = 'post_count', color = 'C0')
-ax1.set_ylabel("bsky post counts", color = 'C0')
-ax1.set_xlabel("week start date")
-
-ax2 = ax1.twinx()
-llm_ili_df.plot(y = 'ili_case', ax = ax2, color = "C1")
-ax2.set_ylabel("ILI case count", color = 'C1')
+    bsky[bsky API] --> dlt
+    WHO --> dlt
+    CDC --> dlt
+    bq --> looker[Looker studio \n dashboard]
+    bq -- python --> stat1[Statistical analysis]
+    bq -- python --> stat2[Machine learning, modeling]
 ```
 
+Open source implementation
+
+::: {.nonincremental}
+
+#### Data ingestion
+- python
+- data load tool (`dlt`)
+
+#### Data storage and SQL
+- Google Big Query
+
+#### Data modeling
+- data build tool (`dbt`)
+
+#### Workflow orchestration
+- `kestra`
+
+available at: (https://github.com/kantundpeterpan/bluesky_ddd_influenza)
 :::
-
-::: {.column}
-
-### Correlation
-
-```{python}
-#| output: true
-llm_ili_df.corr().round(3)
-```
-
-:::
-
-::: 
 
 ## Bibliography {#refs}

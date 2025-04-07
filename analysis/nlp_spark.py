@@ -2,6 +2,9 @@ import pandas as pd
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import udf, to_date, date_trunc
 from pyspark.sql.types import ArrayType, StringType
+from pyspark.sql.functions import col as pyspcol
+from pyspark.sql.functions import desc, asc
+from pyspark.ml.functions import vector_to_array
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import re
@@ -100,35 +103,48 @@ def prepare_french_tweets_for_count_vectorizer(spark, df, vectorizer_params=None
     to_dense_udf = udf(to_dense, ArrayType(StringType()))
 
     #Apply the function to the table
-    count_matrix_df = count_matrix_df.withColumn('dense_vector', to_dense_udf(count_matrix_df['count_vector']))
+    count_matrix_df = count_matrix_df.withColumn('dense_vector', vector_to_array('count_vector'))
     logging.info("Created `dense_vector` column")
 
     #Drop sparse vector as no longer needed
     count_matrix_df = count_matrix_df.drop('count_vector')
     logging.info("Dropped `count_vector` column")
 
+
     #Rename the "count_vector_dense" to the vocabulary words (this is required to make the group by operation workable)
     vocabulary = model.vocabulary
-    for i, word in enumerate(vocabulary):
-        count_matrix_df = count_matrix_df.withColumn(word, count_matrix_df["dense_vector"].getItem(i).cast("integer"))
+    logging.info(f"Total vocabulary size: {len(vocabulary)}")
+    # for i, word in enumerate(vocabulary):
+    #     count_matrix_df = count_matrix_df.withColumn(word, count_matrix_df["dense_vector"].getItem(i).cast("integer"))
+    
+    count_matrix_df_renamed = count_matrix_df.select(
+        [pyspcol("iso_weekstartdate")] + \
+            [pyspcol("dense_vector")[i].alias(word).cast('integer') for i, word in zip(range(len(vocabulary)), vocabulary)]
+    )
+    
     logging.info("Added vocabulary columns")
 
     #Remove the intermediate column "count_vector_dense"
-    count_matrix_df = count_matrix_df.drop("dense_vector")
+    # count_matrix_df = count_matrix_df.drop("dense_vector")
     logging.info("Dropped `dense_vector` column")
 
     #Group by iso_weekstartdate and sum the words from vocabulary
-    weekly_token_counts = count_matrix_df.groupBy("iso_weekstartdate").sum()
+    weekly_token_counts = count_matrix_df_renamed.groupBy("iso_weekstartdate").sum()
     weekly_token_counts = weekly_token_counts.withColumn("iso_weekstartdate", to_date("iso_weekstartdate"))
     logging.info("Performed weekly aggregation")
+    
     #Convert columns names to be correct (remove sum(.) prefix)
-    for col in weekly_token_counts.columns:
-        if col != "iso_weekstartdate":
-            weekly_token_counts = weekly_token_counts.withColumnRenamed(col, col.replace("sum(", "").replace(")", ""))
+    agg_cols = weekly_token_counts.columns
+    aliases = [col.replace("sum(", "").replace(")", "") for col in agg_cols]
+    
+    weekly_token_counts_renamed  = weekly_token_counts.select(
+        [pyspcol(col).alias(a) for col,a in zip(agg_cols, aliases)]
+    )
+    
     logging.info("Renamed aggregated columns")
 
     logging.info("Finished prepare_french_tweets_for_count_vectorizer")
-    return weekly_token_counts
+    return weekly_token_counts_renamed.orderBy(asc("iso_weekstartdate"))
 
 def main(
         query: Optional = None,
@@ -174,8 +190,6 @@ def main(
             logging.error(error_message)
             raise ValueError(error_message)
     
-        print(df.shape)
-    
         weekly_counts_df = prepare_french_tweets_for_count_vectorizer(spark, df, vectorizer_params, output_model_path)
 
         # Write to a temporary directory
@@ -197,7 +211,6 @@ def main(
         shutil.rmtree(temp_dir)
         logging.info(f"Removed temporary directory: {temp_dir}")
 
-        print(f"Weekly counts data saved to {output_weekly_counts}")
         logging.info(f"Weekly counts data saved to {output_weekly_counts}")
 
     except Exception as e:

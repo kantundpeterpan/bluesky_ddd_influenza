@@ -175,7 +175,9 @@ def fit_and_evaluate(
 
     # Evaluate model
     if model_type == 'HistGradientBoostingRegressor':
-        evaluate(model, Xtrain, ytrain, cv)
+        fig = evaluate(model, Xtrain, ytrain, cv, plot = True, plot_filepath=)
+        Path(figure_path).mkdir(parents=True, exist_ok=True)
+        fig1.savefig(os.path.join(figure_path, 'evaluations.png'))
         
 
     # Fit model

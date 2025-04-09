@@ -4,7 +4,24 @@ from sklearn.inspection import permutation_importance
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def evaluate(model, X, y, cv, model_prop=None, model_step=None):
+def evaluate(model, X, y, cv, model_prop=None, model_step=None, plot=False, plot_filepath="evaluation_metrics.png", return_fig=False):
+    """
+    Evaluates a model using cross-validation and optionally plots the distribution of MAE and RMSE.
+
+    Args:
+        model: The scikit-learn model to evaluate.
+        X: The feature data.
+        y: The target data.
+        cv: The cross-validation strategy (e.g., KFold, StratifiedKFold).
+        model_prop: Optional. If provided, prints the mean value of this property from the fitted models.
+        model_step: Optional. If provided, gets the model property from a specific step in a pipeline.
+        plot: Boolean flag to enable plotting the distribution of MAE and RMSE.
+        plot_filepath: Filepath to save the plot (if plot is True).
+        return_fig: Boolean flag to return the matplotlib figure object.
+
+    Returns:
+        None.  Prints evaluation metrics, and optionally saves/returns a plot.
+    """
     cv_results = cross_validate(
         model,
         X,
@@ -27,6 +44,29 @@ def evaluate(model, X, y, cv, model_prop=None, model_step=None):
         f"Mean Absolute Error:     {mae.mean():.5f} +/- {mae.std():.5f}\n"
         f"Root Mean Squared Error: {rmse.mean():.5f} +/- {rmse.std():.5f}"
     )
+
+    if plot:
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+        # Plot MAE distribution
+        pd.Series(mae).hist(ax=axes[0], density=True, alpha=0.7, label='MAE')
+        pd.Series(mae).plot(kind='kde', ax=axes[0], color='blue')
+        axes[0].set_title('Mean Absolute Error Distribution')
+        axes[0].set_xlabel('MAE')
+        axes[0].legend()
+
+        # Plot RMSE distribution
+        pd.Series(rmse).hist(ax=axes[1], density=True, alpha=0.7, label='RMSE')
+        pd.Series(rmse).plot(kind='kde', ax=axes[1], color='green')
+        axes[1].set_title('Root Mean Squared Error Distribution')
+        axes[1].set_xlabel('RMSE')
+        axes[1].legend()
+        plt.tight_layout()  # Adjust layout to prevent labels from overlapping
+
+
+        if return_fig:
+            return fig
+
 
 
 def plot_predictions(

@@ -7,7 +7,8 @@ sources:
       - name: rhume
       - name: fievre
       - name: courbature
-  
+      - name: llm_hints
+
 models:
   - name: bsky_all_posts_fr
     sources:
@@ -15,3 +16,8 @@ models:
       - source('bsky_posts', 'rhume')
       - source('bsky_posts', 'fievre')
       - source('bsky_posts', 'courbature')
+
+  - name: bsky_post_fr_llm_filtered
+    sources:
+      - ref('bsky_all_posts_fr')
+      - source('bsky_posts_fr', 'llm_hints')

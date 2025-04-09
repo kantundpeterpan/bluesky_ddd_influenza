@@ -19,7 +19,7 @@ credentials = service_account.Credentials.from_service_account_file(
 
 def load_post_count_ili():
 
-    post_count_ili_sql ="SELECT * FROM `digepizcde.bsky_ili.bsky_ili_fr`"
+    post_count_ili_sql ="SELECT * FROM `digepizcde.bsky_ili.bsky_ili_fr` ORDER BY date"
     post_count_ili_df = pandas_gbq.read_gbq(
         post_count_ili_sql, credentials=credentials
     ).set_index('date')
@@ -49,6 +49,18 @@ def load_merged_posts_ww(min_weeks = 12, min_mentions = 10):
     post_count_ili_df = post_count_ili_df.merge(weekly_words, left_index=True, right_index=True)
     
     return post_count_ili_df
+
+def load_llm_filtered_post_count():
+
+    llm_filtered_post_count_sql ="SELECT date, llm_post_count, ili_incidence, rest_posts FROM `digepizcde.bsky_ili.bsky_ili_fr_llm_filtered` ORDER BY date"
+    llm_filtered_post_count = pandas_gbq.read_gbq(
+        llm_filtered_post_count_sql, credentials=credentials
+    ).set_index('date')
+    llm_filtered_post_count.index = pd.to_datetime(llm_filtered_post_count.index)
+    
+    llm_filtered_post_count = extact_time_features(llm_filtered_post_count)
+    
+    return llm_filtered_post_count
 
 def prepare_data_cv(
     df,lags: int = 2, weeks_ahead: int = 1,

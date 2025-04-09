@@ -15,7 +15,8 @@ from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 from sklearn.model_selection import cross_validate
 from analysis.load_dfs import (
     load_merged_posts_ww, make_train_test,
-    load_post_count_ili, prepare_data_cv
+    load_post_count_ili, prepare_data_cv,
+    load_llm_filtered_post_count
 )
 from analysis.model_evaluation import evaluate, plot_predictions, plot_feature_importance
 from pathlib import Path
@@ -46,7 +47,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # fit HistGradient with post time series and lag features
 
 def fit_and_evaluate(
-    data_path: str, model_type: str = 'HistGradientBoostingRegressor',
+    data_path: str,
+    dataset: str = 'grippe_posts',
+    model_type: str = 'HistGradientBoostingRegressor',
     split_date: str = '2024-08-01', lags: int = 2, weeks_ahead: int = 1,
     target_col: str = 'ili_incidence', normalize_y: bool = True,
     cols_to_trop: list = None, split_data: bool = False,
@@ -60,6 +63,7 @@ def fit_and_evaluate(
 
     Args:
         data_path (str): Path to the data (either a csv or instructs to load data).
+        dataset (str): Name of the dataset to load ('grippe_posts' or 'llm_filtered').
         model_type (str): Type of model to use ('HistGradientBoostingRegressor' or 'Ridge').
         split_date (str): Date to split the data into training and testing sets.
         lags (int): Number of lag weeks to use as features.
@@ -72,16 +76,24 @@ def fit_and_evaluate(
         restrict_model (bool): Whether to restrict model parameters.
     """
 
-    logging.info(f"Starting fit_and_evaluate with data_path={data_path}, model_type={model_type}, split_date={split_date}, lags={lags}, weeks_ahead={weeks_ahead}, target_col={target_col}, normalize_y={normalize_y}, cols_to_trop={cols_to_trop}, output_path={output_path}, figure_path={figure_path}, split_data={split_data}, restrict_model={restrict_model}")
+    logging.info(f"Starting fit_and_evaluate with data_path={data_path}, dataset={dataset}, model_type={model_type}, split_date={split_date}, lags={lags}, weeks_ahead={weeks_ahead}, target_col={target_col}, normalize_y={normalize_y}, cols_to_trop={cols_to_trop}, output_path={output_path}, figure_path={figure_path}, split_data={split_data}, restrict_model={restrict_model}")
 
     # Load data
     try:
        # if os.path.exists(data_path):
        #     df = pd.read_csv(data_path, index_col='date', parse_dates=['date'])
         #else:
-        df = load_post_count_ili()
+        if dataset == "grippe_posts":
+            df = load_post_count_ili()
+            df = df.rename(columns={'rest_posts':'control_posts', 'grippe_posts':'ili_posts'})
+        
+        elif dataset == 'llm_filtered':
+            df = load_llm_filtered_post_count()
+        
+        else:
+            raise ValueError("Unsupported dataset")
+        
         print(df.shape)
-        df = df.rename(columns={'rest_posts':'control_posts', 'grippe_posts':'ili_posts'})
         logging.info("Data loaded successfully.")
     except Exception as e:
         logging.error(f"Error loading data: {e}")
@@ -147,10 +159,10 @@ def fit_and_evaluate(
 
     # Define TimeSeriesSplit
     cv =  TimeSeriesSplit(
-        n_splits=5,
+        n_splits=40,
         gap=0,
         max_train_size=100,
-        test_size=5,
+        test_size=1,
     )
     
     for i, (train_index, test_index) in enumerate(cv.split(Xtrain)):
@@ -251,6 +263,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fit and evaluate a time series model.")
     parser.add_argument("--data_path", type=str, default=".",
                         help="Path to the data file (or data loading instruction).")
+    parser.add_argument("--dataset", type=str, default="grippe_posts", choices=['grippe_posts', 'llm_filtered'],
+                        help="Name of the dataset to load ('grippe_posts' or 'llm_filtered').")
     parser.add_argument("--model_type", type=str, default="HistGradientBoostingRegressor",
                         help="Type of model to use (HistGradientBoostingRegressor or Ridge).")
     parser.add_argument("--split_date", type=str, default="2024-08-01",
@@ -278,6 +292,7 @@ if __name__ == "__main__":
 
     fit_and_evaluate(
     data_path=args.data_path,
+    dataset=args.dataset,
     model_type=args.model_type,
     split_date=args.split_date,
     lags=args.lags,

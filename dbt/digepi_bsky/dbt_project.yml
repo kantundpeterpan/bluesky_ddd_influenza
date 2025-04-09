@@ -30,11 +30,13 @@ clean-targets:         # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 
 vars:
-   ili_kws_fr: ["'grippe'", "'rhume'", "'fievre'", "'courbature'"]
-   control_kws_fr: ["'travail'", "'demain'", "'sommeil'", "'voitures'"]
-   ili_kws_de: ["'Grippe'", "'grippe'", "'Schnupfen'", "'Fieber'", "'Muskelschmerzen'"]
-   control_kws_de: ["'Auto'", "'morgen'", "'Arbeit'", "'arbeiten'", "'schlafen'", "'Schlaf'"]
-   ili_kws_en: ["'flu'", "'fever'", "'cough'"]
-   control_kws_en: ["'car'", "'tomorrow'", "'work'", "'sleep'"]
    
-   today: "{{ now().strftime('%Y-%m-%d') }}"
+  ili_kws_fr: ["'grippe'", "'rhume'", "'fievre'", "'courbature'"]
+  control_kws_fr: ["'travail'", "'demain'", "'sommeil'", "'voitures'"]
+  ili_kws_de: ["'Grippe'", "'grippe'", "'Schnupfen'", "'Fieber'", "'Muskelschmerzen'"]
+  control_kws_de: ["'Auto'", "'morgen'", "'Arbeit'", "'arbeiten'", "'schlafen'", "'Schlaf'"]
+  ili_kws_en: ["'flu'", "'fever'", "'cough'"]
+  control_kws_en: ["'car'", "'tomorrow'", "'work'", "'sleep'"]
+  
+  start: "2023-08-01"
+  today: "{{ now().strftime('%Y-%m-%d') }}"

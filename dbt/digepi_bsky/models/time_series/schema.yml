@@ -14,13 +14,34 @@ sources:
       - name: who_fluid
         description: "WHO epidemiological influenza data"
 
+  - name: bsky_posts
+    database: digepizcde
+    schema: bsky_posts
+    tables:
+      - name: grippe
+      - name: rhume
+      - name: fievre
+      - name: courbature
+  
+
 models:
+  - name: daterange_days
+  
+  - name: daterange_weekstart
+
+  - name: fr_incidence_weekstart_fluid
+  - name: fr_incidence_daily_upsampled_fluid
+
   - name: bsky_ili_fr
     sources:
       - source('bsky_housekeeping', 'housekeeping')
       - source('who_ili', 'who_fluid')
+      - ref('fr_incidence_weekstart')
 
   - name: bsky_ili_de
     sources:
       - source('bsky_housekeeping', 'housekeeping')
       - source('who_ili', 'who_fluid')
+
+
+  - name: bsky_post_fr_llm_filtered_daily

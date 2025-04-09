@@ -421,8 +421,8 @@ all aggregated by week
 
 ::: {.column style="max-width:25%"}
 ### Metrics
-| Dataset    | MAE*       |
-| :--------- | :--------------------------: |
+| Dataset    | MAE*                          |
+| :--------- | :---------------------------: |
 | Training   | $23.79$                       |
 | Validation | $80.61$                       |
 
@@ -438,19 +438,18 @@ all aggregated by week
 
 ::: {.columns}
 
-::: {.column} .nonincremental style="max-width:25%"}
+::: {.column .nonincremental style="max-width:25%"}
+
 - model agnostic feature importance procedure
+
 - random shuffling of single input features
+
 :::
 
-::: {.column style="max-width:75%"}
+::: {.column style="width:75%"}
 ![](../analysis/histgrad_nosplit_restrict_figure/feature_importance.png)
 :::
 
-:::
-
-::: notes
-- season
 :::
 
 
@@ -471,6 +470,7 @@ all aggregated by week
 
 ::: {.columns}
 ::: {.column}
+
 ### Prompt extract
 ```
 Analyze the following tweet-like message to determine if it describes the user's own influenza-like illness (ILI). ILI is defined by:
@@ -576,7 +576,7 @@ print(await translate_french_to_english(
 )
 ```
 :::
-:::: {.column style="max-width:20%"}
+::: {.column style="max-width:20%"}
 ```{python}
 #| output: true
 print(sample.symptoms.iloc[0])
@@ -620,6 +620,54 @@ _ = llm_ili_df[['ili_rel_posts', 'ili_incidence', 'rest_posts']].rename(columns 
 _.corr().round(3)
 ```
 
+
+## Predictions and metrics
+
+:::{.nonincremental}
+- Target variable: weeky ILI incidence $w_{t+1}$
+:::
+
+. . .
+
+::: {.columns}
+::: {.column}
+![](../analysis/histgrad_nosplit_restrict_figure/predictions.png)
+:::
+
+::: {.column style="max-width:25%"}
+### Metrics
+| Dataset    | MAE* (LLM  filtered)          | MAE* (w/o LLM) |
+| :--------- | :---------------------------: |:--------------:|
+| Training   | $26.64$                       |
+| Validation | $95.76$                       |
+
+\* [Mean absolute error, incidence per 100,000]{style="font-size:smaller"} 
+:::
+::: 
+
+::: notes
+- small sample size: Generalization error approximation by validation
+:::
+
+## Permutation importance, LLM filtered posts
+
+::: {.columns}
+
+::: {.column .nonincremental style="max-width:25%"}
+
+- model agnostic feature importance procedure
+
+- random shuffling of single input features
+
+:::
+
+::: {.column style="width:75%"}
+![](../analysis/histgrad_nosplit_restrict_llm_figure/feature_importance.png)
+:::
+
+:::
+
+
 # Conclusion
 
 - `bluesky` = promising data source
@@ -641,7 +689,7 @@ _.corr().round(3)
 
 ## Pipeline (WIP)
 
-```{mermaid}
+```mermaid
 graph LR
     subgraph kestra 
         dlt(dlt) --- posts

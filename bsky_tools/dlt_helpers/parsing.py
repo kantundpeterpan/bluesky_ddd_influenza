@@ -111,7 +111,6 @@ def get_posts_count_adaptive_sliding_window_reverse(
         
         #count no of posts
         posts_count = len(posts)
-        print(len(posts))
         
         earliest_post_time = None
         # Update next_date based on the earliest post in the current window

@@ -16,7 +16,8 @@ from sklearn.model_selection import cross_validate
 from analysis.load_dfs import (
     load_merged_posts_ww, make_train_test,
     load_post_count_ili, prepare_data_cv,
-    load_llm_filtered_post_count
+    load_llm_filtered_post_count,
+    load_post_count_ili_upsampled
 )
 from analysis.model_evaluation import evaluate, plot_predictions, plot_feature_importance
 from pathlib import Path
@@ -52,7 +53,7 @@ def fit_and_evaluate(
     model_type: str = 'HistGradientBoostingRegressor',
     split_date: str = '2024-08-01', lags: int = 2, weeks_ahead: int = 1,
     target_col: str = 'ili_incidence', normalize_y: bool = True,
-    cols_to_trop: list = None, split_data: bool = False,
+    cols_to_drop: list = None, split_data: bool = False,
     output_path: str = 'model.joblib',
     figure_path: str = 'figures',
     restrict_model: bool = False
@@ -70,13 +71,13 @@ def fit_and_evaluate(
         weeks_ahead (int): Number of weeks ahead to predict.
         target_col (str): Name of the target column.
         normalize_y (bool): Whether to normalize the target variable.
-        cols_to_trop (list): List of columns to drop from the feature set.
+        cols_to_drop (list): List of columns to drop from the feature set.
         output_path (str): Path to save the fitted model.
         figure_path (str): Path to save figures.
         restrict_model (bool): Whether to restrict model parameters.
     """
 
-    logging.info(f"Starting fit_and_evaluate with data_path={data_path}, dataset={dataset}, model_type={model_type}, split_date={split_date}, lags={lags}, weeks_ahead={weeks_ahead}, target_col={target_col}, normalize_y={normalize_y}, cols_to_trop={cols_to_trop}, output_path={output_path}, figure_path={figure_path}, split_data={split_data}, restrict_model={restrict_model}")
+    logging.info(f"Starting fit_and_evaluate with data_path={data_path}, dataset={dataset}, model_type={model_type}, split_date={split_date}, lags={lags}, weeks_ahead={weeks_ahead}, target_col={target_col}, normalize_y={normalize_y}, cols_to_drop={cols_to_drop}, output_path={output_path}, figure_path={figure_path}, split_data={split_data}, restrict_model={restrict_model}")
 
     # Load data
     try:
@@ -89,11 +90,13 @@ def fit_and_evaluate(
         
         elif dataset == 'llm_filtered':
             df = load_llm_filtered_post_count()
+            
+        elif dataset == 'upsampled':
+            df = load_post_count_ili_upsampled()
         
         else:
             raise ValueError("Unsupported dataset")
         
-        print(df.shape)
         logging.info("Data loaded successfully.")
     except Exception as e:
         logging.error(f"Error loading data: {e}")
@@ -104,15 +107,16 @@ def fit_and_evaluate(
         if split_data:
             Xtrain, ytrain, Xtest, ytest = make_train_test(
             df, split_date=split_date, lags=lags, weeks_ahead=weeks_ahead,
-            target_col=target_col, normalize_y=normalize_y, cols_to_trop=cols_to_trop
+            target_col=target_col, normalize_y=normalize_y, cols_to_drop=cols_to_drop
             )
         else:
             Xtest, ytest = None, None
             Xtrain, ytrain = prepare_data_cv(
                 df, lags=lags, weeks_ahead=weeks_ahead,
-                target_col=target_col, normalize_y=normalize_y, cols_to_trop=cols_to_trop
+                target_col=target_col, normalize_y=normalize_y, cols_to_drop=cols_to_drop
             )
         logging.info("Data prepared for training and testing.")
+        logging.info(Xtrain.shape)
     except Exception as e:
         logging.error(f"Error preparing data: {e}")
         raise
@@ -159,25 +163,25 @@ def fit_and_evaluate(
 
     # Define TimeSeriesSplit
     cv =  TimeSeriesSplit(
-        n_splits=40,
+        n_splits=200,
         gap=0,
-        max_train_size=100,
+        max_train_size=200,
         test_size=1,
     )
     
-    for i, (train_index, test_index) in enumerate(cv.split(Xtrain)):
+    # for i, (train_index, test_index) in enumerate(cv.split(Xtrain)):
 
-        print(f"Fold {i}:")
+    #     print(f"Fold {i}:")
 
-        print(f"  Train: index={train_index}")
+    #     print(f"  Train: index={train_index}")
 
-        print(f"  Test:  index={test_index}")
+    #     print(f"  Test:  index={test_index}")
 
     # Evaluate model
     if model_type == 'HistGradientBoostingRegressor':
-        fig = evaluate(model, Xtrain, ytrain, cv, plot = True, plot_filepath=)
+        fig = evaluate(model, Xtrain, ytrain, cv, plot = True, return_fig=True)
         Path(figure_path).mkdir(parents=True, exist_ok=True)
-        fig1.savefig(os.path.join(figure_path, 'evaluations.png'))
+        fig.savefig(os.path.join(figure_path, 'evaluations.png'))
         
 
     # Fit model
@@ -265,7 +269,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fit and evaluate a time series model.")
     parser.add_argument("--data_path", type=str, default=".",
                         help="Path to the data file (or data loading instruction).")
-    parser.add_argument("--dataset", type=str, default="grippe_posts", choices=['grippe_posts', 'llm_filtered'],
+    parser.add_argument("--dataset", type=str, default="grippe_posts", choices=['grippe_posts', 'llm_filtered', 'upsampled'],
                         help="Name of the dataset to load ('grippe_posts' or 'llm_filtered').")
     parser.add_argument("--model_type", type=str, default="HistGradientBoostingRegressor",
                         help="Type of model to use (HistGradientBoostingRegressor or Ridge).")
@@ -279,7 +283,7 @@ if __name__ == "__main__":
                         help="Name of the target column.")
     parser.add_argument("--normalize_y", action="store_true",
                         help="Whether to normalize the target variable.")  # Use store_true for boolean
-    parser.add_argument("--cols_to_trop", nargs='+', type=str, default=['ili_case', 'ari_case', 'ili_incidence', 
+    parser.add_argument("--cols_to_drop", nargs='+', type=str, default=['ili_case', 'ari_case', 'ili_incidence', 
                                                                         'ari_incidence', 'ili_pop_cov', 'ari_pop_cov'],
                         help="List of columns to drop from the feature set.")
     parser.add_argument("--output_path", type=str, default="model.joblib",
@@ -301,7 +305,7 @@ if __name__ == "__main__":
     weeks_ahead=args.weeks_ahead,
     target_col=args.target_col,
     normalize_y=args.normalize_y,
-    cols_to_trop=args.cols_to_trop,
+    cols_to_drop=args.cols_to_drop,
     output_path=args.output_path,
     figure_path=args.figure_path,
     split_data=args.split_data,

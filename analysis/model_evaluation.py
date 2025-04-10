@@ -1,4 +1,5 @@
 from sklearn.model_selection import cross_validate
+from sklearn.metrics import mean_absolute_error, root_mean_squared_error, make_scorer
 import numpy as np
 from sklearn.inspection import permutation_importance
 import pandas as pd
@@ -27,7 +28,11 @@ def evaluate(model, X, y, cv, model_prop=None, model_step=None, plot=False, plot
         X,
         y,
         cv=cv,
-        scoring=["neg_mean_absolute_error", "neg_root_mean_squared_error"],
+        scoring={
+            "neg_mean_absolute_error":make_scorer(lambda ytrue, ypred: -mean_absolute_error(ytrue, ypred)),
+            "neg_root_mean_squared_error":make_scorer(lambda ytrue, ypred: -root_mean_squared_error(ytrue, ypred)),
+            "diff": make_scorer(lambda ytrue, ypred: ytrue - ypred)
+            },
         return_estimator=model_prop is not None,
     )
     if model_prop is not None:
@@ -40,29 +45,41 @@ def evaluate(model, X, y, cv, model_prop=None, model_step=None, plot=False, plot
         print(f"Mean model.{model_prop} = {np.mean(values)}")
     mae = -cv_results["test_neg_mean_absolute_error"]
     rmse = -cv_results["test_neg_root_mean_squared_error"]
+    diff = cv_results['test_diff']
     print(
         f"Mean Absolute Error:     {mae.mean():.5f} +/- {mae.std():.5f}\n"
         f"Root Mean Squared Error: {rmse.mean():.5f} +/- {rmse.std():.5f}"
     )
 
     if plot:
-        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+        fig, axes = plt.subplots(2, 2, figsize=(12, 10))
 
         # Plot MAE distribution
-        pd.Series(mae).hist(ax=axes[0], density=True, alpha=0.7, label='MAE')
-        pd.Series(mae).plot(kind='kde', ax=axes[0], color='blue')
-        axes[0].set_title('Mean Absolute Error Distribution')
-        axes[0].set_xlabel('MAE')
-        axes[0].legend()
+    
+        pd.Series(mae).hist(ax=axes[0, 0], density=True, alpha=0.7, label='MAE', bins=15)
+        axes[0, 0].set_title('Mean Absolute Error Distribution')
+        axes[0, 0].set_xlabel('MAE')
+        axes[0, 0].legend()
 
         # Plot RMSE distribution
-        pd.Series(rmse).hist(ax=axes[1], density=True, alpha=0.7, label='RMSE')
-        pd.Series(rmse).plot(kind='kde', ax=axes[1], color='green')
-        axes[1].set_title('Root Mean Squared Error Distribution')
-        axes[1].set_xlabel('RMSE')
-        axes[1].legend()
-        plt.tight_layout()  # Adjust layout to prevent labels from overlapping
+        pd.Series(rmse).hist(ax=axes[0, 1], density=True, alpha=0.7, label='RMSE', bins=15)
+        axes[0, 1].set_title('Root Mean Squared Error Distribution')
+        axes[0, 1].set_xlabel('RMSE')
+        axes[0, 1].legend()
 
+        # Plot MAE error bar
+        # y.plot(ax = axes[1,0])
+        axes[1, 0].errorbar(x=y.iloc[-len(mae):].index, y=y.values[-len(mae):], yerr=mae/2, fmt='o', color='blue', capsize=5)
+        axes[1, 0].set_title('Mean Absolute Error with Error Bar')
+
+        # Plot RMSE error bar
+        # y.plot(ax = axes[1,1])
+        axes[1, 1].plot(y.index, y.values)
+        # axes[1, 1].errorbar(x=y.iloc[-len(diff):].index, y=y.values[-len(diff):], yerr=diff, fmt='o', color='green', capsize=5)
+        axes[1, 1].vlines(x=y.iloc[-len(diff):].index, ymin=y.values[-len(diff):], ymax=y.values[-len(diff):]+diff)
+        axes[1, 1].set_title('Root Mean Squared Error with Error Bar')
+
+        plt.tight_layout()  # Adjust layout to prevent labels from overlapping
 
         if return_fig:
             return fig

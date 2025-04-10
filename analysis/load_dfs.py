@@ -29,6 +29,18 @@ def load_post_count_ili():
     
     return post_count_ili_df
 
+def load_post_count_ili_upsampled():
+    
+    post_count_ili_sql ="SELECT * FROM `digepizcde.bsky_ili.bsky_ili_fr_daily` ORDER BY date"
+    post_count_ili_daily_df = pandas_gbq.read_gbq(
+        post_count_ili_sql, credentials=credentials
+    ).set_index('date')
+    post_count_ili_daily_df.index = pd.to_datetime(post_count_ili_daily_df.index)
+    
+    post_count_ili_daily_df = extact_time_features(post_count_ili_daily_df)
+    post_count_ili_daily_df['day'] = post_count_ili_daily_df.index.day.astype("category")
+    
+    return post_count_ili_daily_df
 
 def load_weekly_words():
     
@@ -65,7 +77,7 @@ def load_llm_filtered_post_count():
 def prepare_data_cv(
     df,lags: int = 2, weeks_ahead: int = 1,
     target_col: str = 'ili_incidence', normalize_y: bool = True, 
-    cols_to_trop: Optional[List[str]] = None
+    cols_to_drop: Optional[List[str]] = None
     ):
     
     y = df[target_col].iloc[lags + weeks_ahead:]
@@ -76,8 +88,8 @@ def prepare_data_cv(
     if normalize_y:
         y = y.divide(y.max())
         
-    if cols_to_trop:
-        X = df.drop(cols_to_trop, axis = 1)
+    if cols_to_drop:
+        X = df.drop(cols_to_drop, axis = 1)
     else:
         X = df.copy()
         

@@ -1,7 +1,7 @@
 # use pandas 
 import pandas as pd
 from datetime import timedelta
-from multiprocessing import Pool, Queue, Process, Manager
+from multiprocessing import Pool, Queue, Manager
 import os
 from typing import Callable, List, Optional
 import pandas as pd

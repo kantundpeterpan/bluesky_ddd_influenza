@@ -111,7 +111,7 @@ def get_posts_count_adaptive_sliding_window_reverse(
         
         #count no of posts
         posts_count = len(posts)
-        
+        print(len(posts))
         
         earliest_post_time = None
         # Update next_date based on the earliest post in the current window
@@ -125,7 +125,10 @@ def get_posts_count_adaptive_sliding_window_reverse(
         
         for post in posts:
             record = post['record']
-            created_at = record.get("createdAt")
+            indexed_at = post.get('indexedAt')
+            created_at = record.get('createdAt')
+            created_at = created_at if indexed_at is None else min(created_at, indexed_at)
+
             if created_at:
                 post_datetime = datetime.fromisoformat(created_at.replace("Z", "+00:00")).astimezone(
                     timezone.utc)  # Ensure UTC
@@ -141,7 +144,8 @@ def get_posts_count_adaptive_sliding_window_reverse(
             }
         
         next_date = earliest_post_time
-        next_date -= timedelta(microseconds=1)
+        next_date -= timedelta(seconds=5)
+
 
 def create_query_params_from_date(
     query: str,
@@ -167,8 +171,8 @@ def create_query_params_from_date(
     end_dates = [start_date + timedelta(seconds=(i + 1) * chunk_seconds - 1) for i in range(n_chunks)]
 
     # Format start and end dates to strings and add the 'T' separator
-    start_dates = [dt.strftime('%Y-%m-%dT%H:%M:%S+00:00') for dt in start_dates]
-    end_dates = [dt.strftime('%Y-%m-%dT%H:%M:%S+00:00') for dt in end_dates]
+    start_dates = [dt.strftime('%Y-%m-%dT%H:%M:%SZ') for dt in start_dates]
+    end_dates = [dt.strftime('%Y-%m-%dT%H:%M:%SZ') for dt in end_dates]
 
     return zip([query] * len(start_dates), start_dates, end_dates)
 

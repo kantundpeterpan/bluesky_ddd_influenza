@@ -129,6 +129,8 @@ def _run_query_pool(
             p.join(timeout = 60)
             if p.is_alive():
                 logging.info(f"Process {i} - alive")
+            else:
+                logging.info(f"Process {i} - finished")
                 
     progress_queue.put(None)
     # Signal all jobs processed

@@ -52,38 +52,46 @@ def evaluate(model, X, y, cv, model_prop=None, model_step=None, plot=False, plot
     )
 
     if plot:
-        fig, axes = plt.subplots(2, 2, figsize=(12, 10))
-
+        fig, axes = plt.subplots(1, 2, figsize=(25, 10))
+        
         # Plot MAE distribution
     
-        pd.Series(mae).hist(ax=axes[0, 0], density=True, alpha=0.7, label='MAE', bins=15)
-        axes[0, 0].set_title('Mean Absolute Error Distribution')
-        axes[0, 0].set_xlabel('MAE')
-        axes[0, 0].legend()
+        pd.Series(mae).hist(ax=axes[0], density=True, alpha=1, label='MAE', bins=15)
+        axes[0].set_title('Absolute Error Distribution')
+        axes[0].set_xlabel('$|y_{true} - y_{pred}|$', fontsize = 20)
+        axes[0].legend()
 
         # Plot RMSE distribution
-        pd.Series(rmse).hist(ax=axes[0, 1], density=True, alpha=0.7, label='RMSE', bins=15)
-        axes[0, 1].set_title('Root Mean Squared Error Distribution')
-        axes[0, 1].set_xlabel('RMSE')
-        axes[0, 1].legend()
+        # pd.Series(rmse).hist(ax=axes[0, 1], density=True, alpha=0.7, label='RMSE', bins=15)
+        # axes[0, 1].set_title('Root Mean Squared Error Distribution')
+        # axes[0, 1].set_xlabel('RMSE')
+        # axes[0, 1].legend()
 
-        # Plot MAE error bar
-        # y.plot(ax = axes[1,0])
-        axes[1, 0].errorbar(x=y.iloc[-len(mae):].index, y=y.values[-len(mae):], yerr=mae/2, fmt='o', color='blue', capsize=5)
-        axes[1, 0].set_title('Mean Absolute Error with Error Bar')
+        # # Plot MAE error bar
+        # # y.plot(ax = axes[1,0])
+        # axes[1, 0].errorbar(x=y.iloc[-len(mae):].index, y=y.values[-len(mae):], yerr=mae/2, fmt='o', color='blue', capsize=5)
+        # axes[1, 0].set_title('Mean Absolute Error with Error Bar')
 
         # Plot RMSE error bar
         # y.plot(ax = axes[1,1])
-        axes[1, 1].plot(y.index, y.values)
+        axes[1].plot(y.index, y.values)
         # axes[1, 1].errorbar(x=y.iloc[-len(diff):].index, y=y.values[-len(diff):], yerr=diff, fmt='o', color='green', capsize=5)
-        axes[1, 1].vlines(x=y.iloc[-len(diff):].index, ymin=y.values[-len(diff):], ymax=y.values[-len(diff):]+diff)
-        axes[1, 1].set_title('Root Mean Squared Error with Error Bar')
-
+        axes[1].plot(y.iloc[-len(diff):].index, y.values[-len(diff):]+diff, linestyle = '--', color = 'black')
+        colors = ['green' if d > 0 else 'red' for d in diff]
+        axes[1].vlines(
+            x=y.iloc[-len(diff):].index,
+            ymin=y.values[-len(diff):],
+            ymax=y.values[-len(diff):]+diff,
+            colors = colors
+            )
+        axes[1].tick_params(axis='x', labelrotation=90)
+        axes[1].set_title('Ground truth vs. prediction')
+        axes[1].set_ylabel('ILI incidence / 10^5')
+        axes[1].legend(['ground truth', 'predictions'])
         plt.tight_layout()  # Adjust layout to prevent labels from overlapping
 
         if return_fig:
             return fig
-
 
 
 def plot_predictions(
@@ -123,7 +131,7 @@ def plot_feature_importance(
     n_repeats=25, random_state=42, n_jobs=-1,
     keep_n: int = None
 ):
-    fig, ax = plt.subplots(figsize = (15,15))
+    fig, ax = plt.subplots(figsize = (25,25))
     
     result = permutation_importance(
         predictor, Xtest, ytest, n_repeats=25, random_state=42, n_jobs=-1,

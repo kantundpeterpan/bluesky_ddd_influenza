@@ -45,5 +45,9 @@ body, h1, h2, h3, h4, h5, h6, p, table, ul, ol, li, dl, dt, dd {
   padding: 0em;
 }
 
+#mermaid-1 .cluster rect {
+  fill: lightblue !important;
+}
+
 /* Further margin/padding reduction for specific elements if needed */
 /* Example: table { margin: 0.1em; padding: 0.1em; } */

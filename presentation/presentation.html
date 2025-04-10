@@ -548,13 +548,19 @@ Heiner Atze
 <li class="fragment"><p>deterministic search</p></li>
 <li class="fragment"><p>allows exhaustive sampling</p></li>
 </ul>
-</section>
-<section id="getprofiles" class="slide level2">
-<h2><code>getProfiles</code></h2>
-<ul>
-<li class="fragment">allows to retrieve the author profile information</li>
-<li class="fragment">for reference, not used in this project</li>
-</ul>
+<aside class="notes">
+<p><code>limit</code> adds complexity to extraction of historical data</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
 <section id="post-metadata" class="slide level2">
 <h2>Post metadata</h2>
@@ -580,6 +586,12 @@ Heiner Atze
 <li class="fragment"><p><code>Labelers</code></p></li>
 <li class="fragment"><p>no geo information</p></li>
 </ul>
+<div class="fragment">
+<h3 id="getprofiles-api-endpoint"><code>getProfiles</code> API endpoint</h3>
+<ul>
+<li class="fragment">allows to retrieve the author profile information</li>
+</ul>
+</div>
 </section></section>
 <section>
 <section id="project" class="title-slide slide level1 center">
@@ -651,7 +663,7 @@ Heiner Atze
 <ul>
 <li class="fragment">data downloaded from <code>WHO Flumart</code>
 <ul>
-<li class="fragment">FluID: ILI case data <!-- - FluNet: virological data --></li>
+<li class="fragment">FluID: centralized epidemiological surveillance data <!-- - FluNet: virological data --></li>
 </ul></li>
 </ul>
 </section></section>
@@ -676,8 +688,8 @@ Heiner Atze
 
 <img data-src="presentation_files/figure-revealjs/fig-raw-count-grippe-output-1.png" id="fig-raw-count-grippe" class="r-stretch quarto-figure-center"><p class="caption">
 </p><div style="font-size:smaller">
-<div id="eada0709" class="cell" data-execution_count="13">
-<div class="cell-output cell-output-display" data-execution_count="13">
+<div id="f016fc97" class="cell" data-execution_count="13">
+<div class="cell-output cell-output-display" data-execution_count="38">
 <div>
 <style scoped="">
     .dataframe tbody tr th:only-of-type {
@@ -706,19 +718,19 @@ Heiner Atze
 <tr class="odd">
 <td data-quarto-table-cell-role="th">ILI posts</td>
 <td>1.000</td>
-<td>0.878</td>
-<td>0.775</td>
+<td>0.863</td>
+<td>0.773</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">Control posts</td>
-<td>0.878</td>
+<td>0.863</td>
 <td>1.000</td>
-<td>0.567</td>
+<td>0.541</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">ILI incidence</td>
-<td>0.775</td>
-<td>0.567</td>
+<td>0.773</td>
+<td>0.541</td>
 <td>1.000</td>
 </tr>
 </tbody>
@@ -744,22 +756,33 @@ Heiner Atze
           overflow: hidden!important;
           display:block!important;
       }</style></aside>
-</section>
-<section id="normalized-keyword-posts-vs.-ili-incidence" class="slide level2">
-<h2>Normalized keyword posts <em>vs.</em> ILI incidence</h2>
+<!-- 
+## Normalized keyword posts *vs.* ILI incidence 
 
-<img data-src="presentation_files/figure-revealjs/fig-norm-count-grippe-output-1.png" id="fig-norm-count-grippe" class="r-stretch quarto-figure-center"><p class="caption">
-</p><div class="columns">
-<div class="column" style="font-size:smaller">
-<ul>
-<li class="fragment">Normalization of the number ILI keyword containing messages using the number of control messages</li>
-</ul>
-</div><div class="column">
-<div style="font-size:smaller">
-<div id="d4db9194" class="cell" data-execution_count="15">
-<div class="cell-output cell-output-display" data-execution_count="15">
+::: {#cell-fig-norm-count-grippe .cell execution_count=14}
+
+::: {.cell-output .cell-output-display}
+![](presentation_files/figure-revealjs/fig-norm-count-grippe-output-1.png){#fig-norm-count-grippe}
+:::
+:::
+
+
+::: {.columns}
+
+::: {.column style="font-size:smaller" .nonincremental}
+- Normalization of the number ILI keyword containing messages using the number of control messages
+:::
+
+::: {.column}
+:::{style="font-size:smaller"}
+
+::: {#7d186a40 .cell execution_count=15}
+
+::: {.cell-output .cell-output-display execution_count=40}
+
+```{=html}
 <div>
-<style scoped="">
+<style scoped>
     .dataframe tbody tr th:only-of-type {
         vertical-align: middle;
     }
@@ -786,29 +809,36 @@ Heiner Atze
 <tr class="odd">
 <td data-quarto-table-cell-role="th">ILI posts</td>
 <td>1.000</td>
-<td>0.063</td>
-<td>0.517</td>
+<td>0.032</td>
+<td>0.527</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">Control posts</td>
-<td>0.063</td>
+<td>0.032</td>
 <td>1.000</td>
-<td>0.567</td>
+<td>0.541</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">ILI cases</td>
-<td>0.517</td>
-<td>0.567</td>
+<td>0.527</td>
+<td>0.541</td>
 <td>1.000</td>
 </tr>
 </tbody>
 </table>
 
 </div>
-</div>
-</div>
-</div>
-</div></div>
+```
+
+:::
+:::
+
+
+:::
+
+:::
+
+:::  -->
 <aside class="notes">
 <p>test test test</p>
 <style type="text/css">
@@ -831,8 +861,9 @@ Heiner Atze
 <section id="features" class="slide level2">
 <h2>Features</h2>
 <ul>
-<li class="fragment">no. of control posts</li>
-<li class="fragment">no. of posts containing ILI related keyword</li>
+<li class="fragment">weekly no. of control posts</li>
+<li class="fragment">weekly no. of posts containing ILI related keyword</li>
+<li class="fragment">normalized post counts</li>
 <li class="fragment">time and seasonal features
 <ul>
 <li class="fragment">year</li>
@@ -842,7 +873,12 @@ Heiner Atze
 </ul></li>
 <li class="fragment">lag terms</li>
 </ul>
-<p>all aggregated by week</p>
+</section>
+<section id="model-structure" class="slide level2">
+<h2>Model structure</h2>
+<p><span class="math inline">\(Y_w:\)</span> ILI Incidence in week <span class="math inline">\(w\)</span></p>
+<p><span class="math inline">\(X_w:\)</span> Input features obtained in week <span class="math inline">\(w\)</span></p>
+<p><span class="math display">\[Y_{w+1} = f(X_w, X_{w-1}, X_{w-2})\]</span></p>
 </section>
 <section id="gradient-boosted-trees" class="slide level2 scrollable">
 <h2>Gradient boosted trees</h2>
@@ -879,7 +915,7 @@ Heiner Atze
           overflow: hidden!important;
           display:block!important;
       }</style></aside>
-<aside><ol class="aside-footnotes"><li id="fn4"><p><span class="citation" data-cites="pythongeeksGradientBoosting">Team</span></p></li></ol></aside></section>
+<aside><ol class="aside-footnotes"><li id="fn4"><p><span class="citation" data-cites="pythongeeksGradientBoosting">pythongeeks.org</span></p></li></ol></aside></section>
 <section id="model-evaluation" class="slide level2 scrollable">
 <h2>Model evaluation</h2>
 <div class="columns">
@@ -889,6 +925,11 @@ Heiner Atze
 <ul>
 <li class="fragment">retains temporal information</li>
 <li class="fragment">mimics continuous data acquisition</li>
+</ul></li>
+<li class="fragment">Setup:
+<ul>
+<li class="fragment">initial training: 40 weeks</li>
+<li class="fragment">test set size: 1 week</li>
 </ul></li>
 </ul>
 </div><div class="column">
@@ -917,38 +958,51 @@ Heiner Atze
           display:block!important;
       }</style></aside>
 <aside><ol class="aside-footnotes"><li id="fn5"><p><span class="citation" data-cites="stackexchangeApplyStacking"><span>“<span>H</span>ow to Apply <span>S</span>tacking Cross Validation for Time-Series Data? — Datascience.stackexchange.com”</span></span></p></li></ol></aside></section>
+<section id="validation-results" class="slide level2">
+<h2>Validation results</h2>
+
+<img data-src="../analysis/histgrad_nosplit_restrict_figures/evaluations.png" class="r-stretch"></section>
 <section id="predictions-and-metrics" class="slide level2">
 <h2>Predictions and metrics</h2>
 <div>
 <ul>
-<li>Target variable: weeky ILI incidence <span class="math inline">\(w_{t+1}\)</span></li>
+<li>Target variable: weeky ILI incidence one week ahead <span class="math inline">\(Y_{w+1}\)</span></li>
 </ul>
 </div>
 <div class="fragment">
 <div class="columns">
 <div class="column">
-<p><img data-src="../analysis/histgrad_nosplit_restrict_figure/predictions.png"></p>
-</div><div class="column" style="max-width:25%">
+<p><img data-src="../analysis/histgrad_nosplit_restrict_figures/predictions.png"></p>
+</div><div class="column" style="max-width:27%">
 <h3 id="metrics">Metrics</h3>
 <table class="caption-top">
+<colgroup>
+<col style="width: 14%">
+<col style="width: 42%">
+<col style="width: 42%">
+</colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: left;">Dataset</th>
 <th style="text-align: center;">MAE*</th>
+<th style="text-align: center;">RMSE</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Training</td>
-<td style="text-align: center;"><span class="math inline">\(23.79\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(23.96\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(33.93\)</span></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Validation</td>
-<td style="text-align: center;"><span class="math inline">\(80.61\)</span></td>
+<td style="text-align: left;">Validation <sup> + </sup></td>
+<td style="text-align: center;"><span class="math inline">\(56.54\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(56.54\)</span></td>
 </tr>
 </tbody>
 </table>
 <p>* <span style="font-size:smaller">Mean absolute error, incidence per 100,000</span></p>
+<p><sup>+</sup> mean over all validation runs</p>
 </div></div>
 <aside class="notes">
 <ul>
@@ -967,8 +1021,8 @@ Heiner Atze
       }</style></aside>
 </div>
 </section>
-<section id="permutation-importance" class="slide level2">
-<h2>Permutation importance</h2>
+<section id="permutation-importance-of-the-current-model" class="slide level2">
+<h2>Permutation importance of the current model</h2>
 <div class="columns">
 <div class="column" style="max-width:25%">
 <ul>
@@ -976,7 +1030,7 @@ Heiner Atze
 <li><p>random shuffling of single input features</p></li>
 </ul>
 </div><div class="column" style="width:75%">
-<p><img data-src="../analysis/histgrad_nosplit_restrict_figure/feature_importance.png"></p>
+<p><img data-src="../analysis/histgrad_nosplit_restrict_figures/feature_importance.png"></p>
 </div></div>
 </section></section>
 <section>
@@ -1039,7 +1093,7 @@ Heiner Atze
 <span id="cb3-2"><a href=""></a><span class="fu">{</span></span>
 <span id="cb3-3"><a href=""></a>    <span class="dt">"ili_related"</span> <span class="fu">:</span><span class="kw">true</span><span class="fu">,</span></span>
 <span id="cb3-4"><a href=""></a>    <span class="er">symptoms</span><span class="fu">:{</span></span>
-<span id="cb3-5"><a href=""></a>      <span class="er">['fever'</span><span class="fu">,</span> <span class="er">'headache']</span></span>
+<span id="cb3-5"><a href=""></a>      <span class="er">[</span><span class="dt">"fever"</span><span class="fu">,</span> <span class="dt">"headache"</span><span class="er">]</span></span>
 <span id="cb3-6"><a href=""></a>    <span class="fu">}</span></span>
 <span id="cb3-7"><a href=""></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div>
@@ -1051,44 +1105,42 @@ Heiner Atze
 <div class="columns">
 <div class="column" style="max-width:40%">
 <h4 id="original-message">Original message</h4>
-<div id="69a310bd" class="cell" data-execution_count="17">
+<div id="0859fbc3" class="cell" data-execution_count="17">
 <div class="cell-output cell-output-stdout">
-<pre><code>3 doses à l’époque (oui ça date..) et un covid en décembre 2022 (noël repoussé au 20 janvier) et le mois dernier un truc bizarre : gros rhume avec plusieurs rechutes et épisodes fiévreux à plusieurs jours d’intervalle : j’ai eu un doute 🤔
-Faudrait peut-être en effet…</code></pre>
+<pre><code>J'ai écrit 9 pages depuis hier, sous sinusite et fièvre. J'sais pas si c'est un total délire de Stoner un peu trop nerd ou l'un de mes meilleurs textes.</code></pre>
 </div>
 </div>
 </div><div class="column" style="max-width:40%">
 <h4 id="machine-translation">Machine translation</h4>
-<div id="276e49de" class="cell" data-execution_count="18">
+<div id="94d93c60" class="cell" data-execution_count="18">
 <div class="cell-output cell-output-stdout">
-<pre><code>3 doses at the time (yes it dates ..) and a covid in December 2022 (Christmas pushed back to January 20) and last month a bizarre thing: big cold with several relapses and feverish episodes several days apart: I had a doubt 🤔
-Maybe you should indeed ...</code></pre>
+<pre><code>I have written 9 pages since yesterday, under sinusitis and fever. I don't know if it is a total delirium to ston a little too nerd or one of my best texts.</code></pre>
 </div>
 </div>
 </div><div class="column" style="max-width:20%">
 <h4 id="llm-symptoms">LLM symptoms</h4>
-<div id="a6d9153c" class="cell" data-execution_count="19">
+<div id="16a3bbfe" class="cell" data-execution_count="19">
 <div class="cell-output cell-output-stdout">
-<pre><code>rhume,épisodes fiévreux</code></pre>
+<pre><code>fièvre,sinusite</code></pre>
 </div>
 </div>
 </div></div>
 <h3 id="ili-negative">ILI negative</h3>
 <div class="columns">
 <div class="column" style="max-width:40%">
-<div id="041290e1" class="cell" data-execution_count="21">
+<div id="c3b9a066" class="cell" data-execution_count="21">
 <div class="cell-output cell-output-stdout">
 <pre><code>Grippe aviaire&nbsp;: les coupes budgétaires de Trump amplifient la&nbsp;menace pandémique www.lepoint.fr/tiny/1-2586310 #Santé via @lepoint.fr</code></pre>
 </div>
 </div>
 </div><div class="column" style="max-width:40%">
-<div id="c2485f90" class="cell" data-execution_count="22">
+<div id="e9763352" class="cell" data-execution_count="22">
 <div class="cell-output cell-output-stdout">
 <pre><code>Aviary flu: Trump's budget cuts amplify the pandemic threat www.lepoint.fr/tiny/1-2586310 #health via @lepoint.fr</code></pre>
 </div>
 </div>
 </div><div class="column" style="max-width:20%">
-<div id="fb426d1f" class="cell" data-execution_count="23">
+<div id="7b0d5dfb" class="cell" data-execution_count="23">
 <div class="cell-output cell-output-stdout">
 <pre><code>nan</code></pre>
 </div>
@@ -1100,8 +1152,8 @@ Maybe you should indeed ...</code></pre>
 
 <img data-src="presentation_files/figure-revealjs/fig-llm-count-grippe-output-1.png" id="fig-llm-count-grippe" class="r-stretch quarto-figure-center"><p class="caption">
 </p><h3 id="correlation">Correlation</h3>
-<div id="5d665aad" class="cell" data-execution_count="25">
-<div class="cell-output cell-output-display" data-execution_count="25">
+<div id="b5572f30" class="cell" data-execution_count="25">
+<div class="cell-output cell-output-display" data-execution_count="50">
 <div>
 <style scoped="">
     .dataframe tbody tr th:only-of-type {
@@ -1130,19 +1182,19 @@ Maybe you should indeed ...</code></pre>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">LLM ILI posts</td>
 <td>1.000</td>
-<td>0.800</td>
-<td>0.804</td>
+<td>0.793</td>
+<td>0.812</td>
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">ILI incidence</td>
-<td>0.800</td>
+<td>0.793</td>
 <td>1.000</td>
-<td>0.567</td>
+<td>0.557</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">Control posts</td>
-<td>0.804</td>
-<td>0.567</td>
+<td>0.812</td>
+<td>0.557</td>
 <td>1.000</td>
 </tr>
 </tbody>
@@ -1151,7 +1203,61 @@ Maybe you should indeed ...</code></pre>
 </div>
 </div>
 </div>
-</section></section>
+</section>
+<section id="predictions-and-metrics-1" class="slide level2">
+<h2>Predictions and metrics</h2>
+<div>
+<ul>
+<li>Target variable: weeky ILI incidence <span class="math inline">\(w_{t+1}\)</span></li>
+</ul>
+</div>
+<div class="fragment">
+<div class="columns">
+<div class="column">
+<p><img data-src="../analysis/histgrad_nosplit_restrict_llm_figures/predictions.png"></p>
+</div><div class="column" style="max-width:25%">
+<h3 id="metrics-1">Metrics</h3>
+<table class="caption-top">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: center;">MAE* (LLM filtered)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Training</td>
+<td style="text-align: center;"><span class="math inline">\(26.64\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Validation</td>
+<td style="text-align: center;"><span class="math inline">\(58.87\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>* <span style="font-size:smaller">Mean absolute error, incidence per 100,000</span></p>
+</div></div>
+<aside class="notes">
+<ul>
+<li>no real difference</li>
+</ul>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</div>
+</section>
+<section id="permutation-importance-llm-filtered-posts" class="slide level2">
+<h2>Permutation importance, LLM filtered posts</h2>
+
+<img data-src="../analysis/histgrad_nosplit_restrict_llm_figures/feature_importance.png" class="r-stretch"></section></section>
 <section id="conclusion" class="title-slide slide level1 center">
 <h1>Conclusion</h1>
 <ul>
@@ -1248,11 +1354,14 @@ Maybe you should indeed ...</code></pre>
 <ul>
 <li><code>kestra</code></li>
 </ul>
-<p>available at: (https://github.com/kantundpeterpan/bluesky_ddd_influenza)</p>
+<p>available at: <a href="https://github.com/kantundpeterpan/bluesky_ddd_influenza">https://github.com/kantundpeterpan/bluesky_ddd_influenza</a></p>
 </div>
 </section>
 <section id="refs" class="slide level2">
 <h2>Bibliography</h2>
+</section></section>
+<section id="thank-you-for-your-attention." class="title-slide slide level1 center">
+<h1>Thank you for your attention.</h1>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
 
@@ -1268,14 +1377,15 @@ Duarte, Fabio. <span>“<span>B</span>luesky <span>U</span>ser <span>A</span>ge,
 <div id="ref-stackexchangeApplyStacking" class="csl-entry" role="listitem">
 <span>“<span>H</span>ow to Apply <span>S</span>tacking Cross Validation for Time-Series Data? — Datascience.stackexchange.com.”</span> <a href="https://datascience.stackexchange.com/questions/41378/how-to-apply-stacking-cross-validation-for-time-series-data" class="uri">https://datascience.stackexchange.com/questions/41378/how-to-apply-stacking-cross-validation-for-time-series-data</a>.
 </div>
+<div id="ref-pythongeeksGradientBoosting" class="csl-entry" role="listitem">
+pythongeeks.org. <span>“<span>G</span>radient <span>B</span>oosting <span>A</span>lgorithm in <span>M</span>achine <span>L</span>earning - <span>P</span>ython <span>G</span>eeks — Pythongeeks.org.”</span> <a href="https://pythongeeks.org/gradient-boosting-algorithm-in-machine-learning/" class="uri">https://pythongeeks.org/gradient-boosting-algorithm-in-machine-learning/</a>.
+</div>
 <div id="ref-SignoriniTwitter2011" class="csl-entry" role="listitem">
 Signorini, Alberto Maria AND Polgreen, Alessio AND Segre. 2011. <span>“The Use of Twitter to Track Levels of Disease Activity and Public Concern in the u.s. During the Influenza a H1N1 Pandemic.”</span> <em>PLOS ONE</em> 6 (5): 1–10. <a href="https://doi.org/10.1371/journal.pone.0019467">https://doi.org/10.1371/journal.pone.0019467</a>.
 </div>
-<div id="ref-pythongeeksGradientBoosting" class="csl-entry" role="listitem">
-Team, PythonGeeks. <span>“<span>G</span>radient <span>B</span>oosting <span>A</span>lgorithm in <span>M</span>achine <span>L</span>earning - <span>P</span>ython <span>G</span>eeks — Pythongeeks.org.”</span> <a href="https://pythongeeks.org/gradient-boosting-algorithm-in-machine-learning/" class="uri">https://pythongeeks.org/gradient-boosting-algorithm-in-machine-learning/</a>.
 </div>
-</div>
-</section></section>
+</section>
+
 
     </div>
   </div>

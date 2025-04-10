@@ -1,6 +1,6 @@
 ---
 title: "Beyond twitter"
-subtitle: "Exploring `bluesky.social` for digital disease detection and prototyping a data extraction pipeline for ILI surveillance"
+subtitle: "Prototyping a data extraction pipeline for `bluesky.social` and exploration of `bluesky` user activity for influenza like digital disease detection"
 author: "Heiner Atze"
 institute: Digital Epidemiology 2025, Hasselt University
 date: "April 10, 2025"
@@ -70,7 +70,7 @@ bibliography: "../../dig_epi.bib"
 
 - Decentralized User Identifier (DID)
   - immutable, associated with human readable user handle
-- Personal Data servers (PSDs)
+- Personal Data servers (PDS)
 
 - DIDs and affiliated contents are portable between PSDs 
 - Users can choose, prioritize and develop feed generators and content labelers
@@ -137,10 +137,9 @@ bibliography: "../../dig_epi.bib"
 - deterministic search
 - allows exhaustive sampling
 
-## `getProfiles`
-
-- allows to retrieve the author profile information
-- for reference, not used in this project
+::: notes
+`limit` adds complexity to extraction of historical data
+:::
 
 ## Post metadata
 
@@ -161,6 +160,12 @@ bibliography: "../../dig_epi.bib"
 - `Labelers`
 
 - no geo information
+
+. . .
+
+### `getProfiles` API endpoint
+- allows to retrieve the author profile information
+
 
 # Project
 
@@ -207,7 +212,7 @@ bibliography: "../../dig_epi.bib"
 ## Case data
 
   - data downloaded from `WHO Flumart`
-    - FluID: ILI case data
+    - FluID: centralized epidemiological surveillance data
     <!-- - FluNet: virological data -->
 
 # Results
@@ -275,7 +280,7 @@ ax1.legend(['ILI posts'], loc='upper left', fontsize=fontsize_legend)
 
 
 ax2 = ax1.twinx()
-post_count_ili_df.plot(y = 'ili_incidence', ax = ax2, color = "C1", linewidth = linewidth)
+post_count_ili_df.ili_incidence.multiply(100_000).plot(ax = ax2, color = "C1", linewidth = linewidth)
 _ = ax2.set_ylabel("weekly ILI incidence \n / 100,000", color = 'C1', fontsize = fontsize)
 ax2.tick_params(axis='both', which='major', labelsize=fontsize)
 ax2.yaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True))
@@ -299,6 +304,7 @@ _.corr().round(3)
 - correlation is higher for ILI posts, indicating signal improvement
 ::: 
 
+<!-- 
 ## Normalized keyword posts *vs.* ILI incidence 
 
 ```{python}
@@ -316,17 +322,17 @@ ax1.legend(['ILI posts'], loc='upper left', fontsize=fontsize_legend)
 
 
 ax2 = ax1.twinx()
-post_count_ili_df.plot(y = 'ili_incidence', ax = ax2, color = "C1", linewidth = linewidth)
-_ = ax2.set_ylabel("ILI incidence", color = 'C1', fontsize = fontsize)
+post_count_ili_df.ili_incidence.multiply(100_000).plot(y = 'ili_incidence', ax = ax2, color = "C1", linewidth = linewidth)
+_ = ax2.set_ylabel("weekly ILI incidence \n / 100,000", color = 'C1', fontsize = fontsize)
 ax2.tick_params(axis='both', which='major', labelsize=fontsize)
 ax2.yaxis.set_major_formatter(mticker.ScalarFormatter(useMathText=True))
 ax2.ticklabel_format(style="sci", axis="y", scilimits=(0,0))
 ax2.yaxis.get_offset_text().set_fontsize(yoffset_fontsize)
 ax2.legend(['ILI incidence'], loc='upper center', fontsize=fontsize_legend)
 ```
-::: {.columns }
+::: {.columns}
 
-::: {.column style="font-size:smaller"}
+::: {.column style="font-size:smaller" .nonincremental}
 - Normalization of the number ILI keyword containing messages using the number of control messages
 :::
 
@@ -342,7 +348,7 @@ _.corr().round(3)
 
 :::
 
-::: 
+:::  -->
 
 
 ::: notes
@@ -353,8 +359,9 @@ test test test
 
 ## Features
 
-- no. of control posts
-- no. of posts containing ILI related keyword
+- weekly no. of control posts
+- weekly no. of posts containing ILI related keyword
+- normalized ILI related post counts
 - time and seasonal features
   - year
   - month
@@ -362,7 +369,13 @@ test test test
   - season
 - lag terms
 
-all aggregated by week
+## Model structure
+
+$Y_w:$ ILI Incidence in week $w$
+
+$X_w:$ Input features obtained in week $w$
+
+$$Y_{w+1} = f(X_w, X_{w-1}, X_{w-2})$$
 
 
 
@@ -389,9 +402,15 @@ all aggregated by week
 
 ::: {.columns}
 ::: {.column}
+
 - Time series split validation
   - retains temporal information 
   - mimics continuous data acquisition
+
+- Setup:
+  - initial training: 40 weeks
+  - test set size: 1 week
+
 :::
 ::: {.column}
 ![Expanding window time series validation ^[@stackexchangeApplyStacking]](./figures/timeseries_split.png)
@@ -404,29 +423,34 @@ all aggregated by week
 - TimeSeries split: instantiation of initial training set and test set, iteratively merging the test set into the training set, the test set data is always in the future with respect to the training data
 :::
 
+## Validation results
 
+![](../analysis/histgrad_nosplit_restrict_figures/evaluations.png)
 
 ## Predictions and metrics
 
 :::{.nonincremental}
-- Target variable: weeky ILI incidence $w_{t+1}$
+- Target variable: weeky ILI incidence one week ahead $Y_{w+1}$
 :::
 
 . . .
 
 ::: {.columns}
 ::: {.column}
-![](../analysis/histgrad_nosplit_restrict_figure/predictions.png)
+![](../analysis/histgrad_nosplit_restrict_figures/predictions.png)
 :::
 
-::: {.column style="max-width:25%"}
+::: {.column style="max-width:27%"}
 ### Metrics
-| Dataset    | MAE*                          |
-| :--------- | :---------------------------: |
-| Training   | $23.79$                       |
-| Validation | $80.61$                       |
+| Dataset    | MAE*                          | RMSE                         |
+| :--------- | :---------------------------: | :---------------------------: |
+| Training   | $23.96$                       | $33.93$  |
+| Validation <sup> + </sup> | $56.54$        | $56.54$ |
 
 \* [Mean absolute error, incidence per 100,000]{style="font-size:smaller"} 
+
+<sup>+</sup> mean over all validation runs
+
 :::
 ::: 
 
@@ -434,7 +458,7 @@ all aggregated by week
 - small sample size: Generalization error approximation by validation
 :::
 
-## Permutation importance
+## Permutation importance of the current model
 
 ::: {.columns}
 
@@ -447,7 +471,7 @@ all aggregated by week
 :::
 
 ::: {.column style="width:75%"}
-![](../analysis/histgrad_nosplit_restrict_figure/feature_importance.png)
+![](../analysis/histgrad_nosplit_restrict_figures/feature_importance.png)
 :::
 
 :::
@@ -510,7 +534,7 @@ Analyze the following tweet-like message to determine if it describes the user's
 {
     "ili_related" :true,
     symptoms:{
-      ['fever', 'headache']
+      ["fever", "headache"]
     }
 }
 ```
@@ -631,41 +655,29 @@ _.corr().round(3)
 
 ::: {.columns}
 ::: {.column}
-![](../analysis/histgrad_nosplit_restrict_figure/predictions.png)
+![](../analysis/histgrad_nosplit_restrict_llm_figures/predictions.png)
 :::
 
 ::: {.column style="max-width:25%"}
 ### Metrics
-| Dataset    | MAE* (LLM  filtered)          | MAE* (w/o LLM) |
-| :--------- | :---------------------------: |:--------------:|
+| Dataset    | MAE* (LLM  filtered)          |
+| :--------- | :---------------------------: |
 | Training   | $26.64$                       |
-| Validation | $95.76$                       |
+| Validation | $58.87$                       |
 
 \* [Mean absolute error, incidence per 100,000]{style="font-size:smaller"} 
 :::
 ::: 
 
 ::: notes
-- small sample size: Generalization error approximation by validation
+- no real difference
 :::
 
 ## Permutation importance, LLM filtered posts
 
-::: {.columns}
 
-::: {.column .nonincremental style="max-width:25%"}
+![](../analysis/histgrad_nosplit_restrict_llm_figures/feature_importance.png)
 
-- model agnostic feature importance procedure
-
-- random shuffling of single input features
-
-:::
-
-::: {.column style="width:75%"}
-![](../analysis/histgrad_nosplit_restrict_llm_figure/feature_importance.png)
-:::
-
-:::
 
 
 # Conclusion
@@ -689,7 +701,7 @@ _.corr().round(3)
 
 ## Pipeline (WIP)
 
-```mermaid
+```{mermaid}
 graph LR
     subgraph kestra 
         dlt(dlt) --- posts
@@ -740,7 +752,10 @@ Open source implementation
 #### Workflow orchestration
 - `kestra`
 
-available at: (https://github.com/kantundpeterpan/bluesky_ddd_influenza)
+available at: [https://github.com/kantundpeterpan/bluesky_ddd_influenza](https://github.com/kantundpeterpan/bluesky_ddd_influenza)
 :::
 
-## Bibliography {#refs}
+
+# Thank you for your attention.
+
+# Bibliography {#refs}

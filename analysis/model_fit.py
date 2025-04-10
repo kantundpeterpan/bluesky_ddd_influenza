@@ -32,10 +32,11 @@ plt.rcParams.update({
     'figure.dpi': 250,       # Set DPI for SVG output
     'svg.fonttype': 'none',   # Embed fonts in SVG for portability
     'font.size': 14,
-    'axes.titlesize': 16,
+    'axes.titlesize': 24,
+    'axes.titleweight': 'bold',
     'axes.labelsize': 14,
-    'xtick.labelsize': 12,
-    'ytick.labelsize': 12,
+    'xtick.labelsize': 20,
+    'ytick.labelsize': 20,
     'legend.fontsize': 12,
     'figure.titlesize': 18,
     'legend.facecolor': 'white',
@@ -163,7 +164,7 @@ def fit_and_evaluate(
 
     # Define TimeSeriesSplit
     cv =  TimeSeriesSplit(
-        n_splits=200,
+        n_splits=42,
         gap=0,
         max_train_size=200,
         test_size=1,
@@ -283,7 +284,7 @@ if __name__ == "__main__":
                         help="Name of the target column.")
     parser.add_argument("--normalize_y", action="store_true",
                         help="Whether to normalize the target variable.")  # Use store_true for boolean
-    parser.add_argument("--cols_to_drop", nargs='+', type=str, default=['ili_case', 'ari_case', 'ili_incidence', 
+    parser.add_argument("--cols_to_drop", nargs='+', type=str, default=['ili_case', 'ari_case', 'ili_incidence',
                                                                         'ari_incidence', 'ili_pop_cov', 'ari_pop_cov'],
                         help="List of columns to drop from the feature set.")
     parser.add_argument("--output_path", type=str, default="model.joblib",

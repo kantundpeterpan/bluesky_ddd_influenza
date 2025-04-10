@@ -11,7 +11,6 @@ format:
     preview-links: true
     toc: false
     toc-title: Outline
-    incremental: true
     scrollable: true
     aspectratio: 16x9
     css: "./pres.css"
@@ -27,6 +26,7 @@ format:
     pdf-engine: tectonic
     incremental: false
 
+incremental: true
 jupyter: digepi
 restart_kernel: true
 execute: 

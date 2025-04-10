@@ -9,6 +9,16 @@ sources:
       - name: courbature
       - name: llm_hints
 
+  - name: bsky_posts_de
+    database: digepizcde
+    schema: bsky_posts
+    tables:
+      - name: grippe
+      - name: Schnupfen
+      - name: Fieber
+      - name: Muskelschmerzen
+      - name: llm_hints
+
 models:
   - name: bsky_all_posts_fr
     sources:
@@ -21,3 +31,10 @@ models:
     sources:
       - ref('bsky_all_posts_fr')
       - source('bsky_posts_fr', 'llm_hints')
+
+  - name: bsky_all_posts_de
+    sources:
+      - source('bsky_posts', 'grippe')
+      - source('bsky_posts', 'Schnupfen')
+      - source('bsky_posts', 'Fieber')
+      - source('bsky_posts', 'Muskelschmerzen')

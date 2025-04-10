@@ -17,9 +17,9 @@ _here_dir = Path(__file__).parent
 credentials = service_account.Credentials.from_service_account_file(
     '../.gc_creds/digepizcde-71333237bf40.json')
 
-def load_post_count_ili():
+def load_post_count_ili(lang: str = 'fr'):
 
-    post_count_ili_sql ="SELECT * FROM `digepizcde.bsky_ili.bsky_ili_fr` ORDER BY date"
+    post_count_ili_sql = f"SELECT * FROM `digepizcde.bsky_ili.bsky_ili_{lang}` ORDER BY date"
     post_count_ili_df = pandas_gbq.read_gbq(
         post_count_ili_sql, credentials=credentials
     ).set_index('date')
@@ -27,11 +27,11 @@ def load_post_count_ili():
     
     post_count_ili_df = extact_time_features(post_count_ili_df)
     
-    return post_count_ili_df
+    return post_count_ili_df.iloc[:-1,:]
 
-def load_post_count_ili_upsampled():
+def load_post_count_ili_upsampled(lang: str = 'fr'):
     
-    post_count_ili_sql ="SELECT * FROM `digepizcde.bsky_ili.bsky_ili_fr_daily` ORDER BY date"
+    post_count_ili_sql = f"SELECT * FROM `digepizcde.bsky_ili.bsky_ili_{lang}_daily` ORDER BY date"
     post_count_ili_daily_df = pandas_gbq.read_gbq(
         post_count_ili_sql, credentials=credentials
     ).set_index('date')

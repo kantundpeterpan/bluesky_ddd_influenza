@@ -7,13 +7,13 @@ date                                  ...
 2023-09-11         61            502  ...         35      Summer
 2023-09-18        108            772  ...         36      Autumn
 ...               ...            ...  ...        ...         ...
+2025-02-24        365           3848  ...          7      Winter
 2025-03-03        301           3789  ...          8      Winter
 2025-03-10        277           4100  ...          9      Winter
 2025-03-17        345           4127  ...         10      Spring
 2025-03-24        244           4490  ...         11      Spring
-2025-03-31        174           4315  ...         12      Spring
 
-[85 rows x 21 columns]
+[84 rows x 21 columns]
 date
 2023-08-28     48.295336
 2023-09-04     58.278963
@@ -21,16 +21,17 @@ date
 2023-09-18     96.328587
 2023-09-25    109.714753
                  ...    
+2025-03-03     91.217566
 2025-03-10     89.909793
-2025-03-17     80.270067
-2025-03-24     65.450652
-2025-03-31      0.000000
-2025-04-07      0.000000
-Name: ili_incidence, Length: 85, dtype: float64
-Mean Absolute Error:     56.53666 +/- 52.87505
-Root Mean Squared Error: 56.53666 +/- 52.87505
+2025-03-17     79.438535
+2025-03-24     60.283058
+2025-03-31     67.680670
+Name: ili_incidence, Length: 84, dtype: float64
+Mean Absolute Error:     54.59812 +/- 53.51660
+Median MAE + [2.5, 97.5] Percentiles: 29.76951 + [5.83568, 216.35955]
+Root Mean Squared Error: 54.59812 +/- 53.51660
 
-Training R^2: 0.921
-Training MAE: 23.96366
-Training RMSE: 33.93031
+Training R^2: 0.927
+Training MAE: 22.88449
+Training RMSE: 32.52041
 

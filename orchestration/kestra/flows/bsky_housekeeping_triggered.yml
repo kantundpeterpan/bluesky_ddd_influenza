@@ -10,9 +10,20 @@ inputs:
       - voiture
       - demain
       - travail
+      - sommeil
       - grippe
       - rhume
       - fievre
+      - courbature
+      - Auto
+      - morgen
+      - Arbeit
+      - arbeiten
+      - schlafen
+      - Schlaf
+      - Schnupfen
+      - Fieber
+      - Muskelschmerzen
   # - id: start_date_str
   #   type: STRING
   - id: end_date_str

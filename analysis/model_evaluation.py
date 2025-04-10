@@ -48,11 +48,12 @@ def evaluate(model, X, y, cv, model_prop=None, model_step=None, plot=False, plot
     diff = cv_results['test_diff']
     print(
         f"Mean Absolute Error:     {mae.mean():.5f} +/- {mae.std():.5f}\n"
+        f"Median MAE + [2.5, 97.5] Percentiles: {np.median(mae):.5f} + [{np.percentile(mae, 2.5):.5f}, {np.percentile(mae, 97.5):.5f}]\n"
         f"Root Mean Squared Error: {rmse.mean():.5f} +/- {rmse.std():.5f}"
     )
 
     if plot:
-        fig, axes = plt.subplots(1, 2, figsize=(25, 10))
+        fig, axes = plt.subplots(1, 3, figsize=(25, 10))
         
         # Plot MAE distribution
     
@@ -82,13 +83,22 @@ def evaluate(model, X, y, cv, model_prop=None, model_step=None, plot=False, plot
             x=y.iloc[-len(diff):].index,
             ymin=y.values[-len(diff):],
             ymax=y.values[-len(diff):]+diff,
-            colors = colors
+            colors = colors, alpha = 0.5
             )
         axes[1].tick_params(axis='x', labelrotation=90)
         axes[1].set_title('Ground truth vs. prediction')
         axes[1].set_ylabel('ILI incidence / 10^5')
         axes[1].legend(['ground truth', 'predictions'])
         plt.tight_layout()  # Adjust layout to prevent labels from overlapping
+
+        import seaborn as sns
+        # Create a DataFrame for Seaborn
+        df = pd.DataFrame({'Ground Truth': y.values[-len(diff):], 'Prediction': y.values[-len(diff):] + diff})
+        # Use lmplot to plot predicted vs actual values
+        sns.regplot(x='Ground Truth', y='Prediction', data=df, ax=axes[2])
+        axes[2].set_xlabel('Ground Truth')
+        axes[2].set_ylabel('Prediction')
+        axes[2].set_title('Prediction vs Ground Truth')
 
         if return_fig:
             return fig

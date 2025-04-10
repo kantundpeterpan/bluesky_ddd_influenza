@@ -7,14 +7,14 @@ inputs:
     itemType: STRING
     required: true
     defaults:
-    #  - voiture
-    #  - demain
-    #  - travail
-    #  - sommeil
-    #  - grippe
-    #  - rhume
-    #  - fievre
-    #  - courbature
+      - voiture
+      - demain
+      - travail
+      - sommeil
+      - grippe
+      - rhume
+      - fievre
+      - courbature
       - Auto
       - morgen
       - Arbeit

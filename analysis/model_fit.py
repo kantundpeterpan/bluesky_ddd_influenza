@@ -86,14 +86,14 @@ def fit_and_evaluate(
        #     df = pd.read_csv(data_path, index_col='date', parse_dates=['date'])
         #else:
         if dataset == "grippe_posts":
-            df = load_post_count_ili()
+            df = load_post_count_ili('de')
             df = df.rename(columns={'rest_posts':'control_posts', 'grippe_posts':'ili_posts'})
         
         elif dataset == 'llm_filtered':
             df = load_llm_filtered_post_count()
             
-        elif dataset == 'upsampled':
-            df = load_post_count_ili_upsampled()
+        elif 'upsampled' in dataset:
+            df = load_post_count_ili_upsampled(dataset.split("_")[-1]).loc['2023-08-06':'2025-03-30']
         
         else:
             raise ValueError("Unsupported dataset")
@@ -164,7 +164,7 @@ def fit_and_evaluate(
 
     # Define TimeSeriesSplit
     cv =  TimeSeriesSplit(
-        n_splits=42,
+        n_splits=42 if 'upsampled' not in dataset else 220,
         gap=0,
         max_train_size=200,
         test_size=1,
@@ -270,7 +270,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fit and evaluate a time series model.")
     parser.add_argument("--data_path", type=str, default=".",
                         help="Path to the data file (or data loading instruction).")
-    parser.add_argument("--dataset", type=str, default="grippe_posts", choices=['grippe_posts', 'llm_filtered', 'upsampled'],
+    parser.add_argument("--dataset", type=str, default="grippe_posts", choices=['grippe_posts', 'llm_filtered', 'upsampled_de', 'upsample_fr'],
                         help="Name of the dataset to load ('grippe_posts' or 'llm_filtered').")
     parser.add_argument("--model_type", type=str, default="HistGradientBoostingRegressor",
                         help="Type of model to use (HistGradientBoostingRegressor or Ridge).")

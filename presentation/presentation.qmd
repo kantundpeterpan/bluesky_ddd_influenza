@@ -16,6 +16,7 @@ format:
     aspectratio: 16x9
     css: "./pres.css"
     page-layout: full
+    embed-resources: true
 
   beamer:
     toc: true
@@ -476,7 +477,6 @@ $$Y_{w+1} = f(X_w, X_{w-1}, X_{w-2})$$
 
 :::
 
-
 # Can "AI" help?
 
 ## Idea
@@ -679,7 +679,6 @@ _.corr().round(3)
 ![](../analysis/histgrad_nosplit_restrict_llm_figures/feature_importance.png)
 
 
-
 # Conclusion
 
 - `bluesky` = promising data source
@@ -758,4 +757,10 @@ available at: [https://github.com/kantundpeterpan/bluesky_ddd_influenza](https:/
 
 # Thank you for your attention.
 
-# Bibliography {#refs}
+## References 
+
+:::{#refs}
+:::
+
+
+

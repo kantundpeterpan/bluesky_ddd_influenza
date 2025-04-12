@@ -5,7 +5,7 @@ sources:
     schema: bsky_housekeeping
     tables:
       - name: housekeeping
-        description: "Counts of posts containing housekeepign queries over time"
+        description: "Counts of posts containing housekeeping queries over time"
   
   - name: who_ili
     database: digepizcde
@@ -26,6 +26,9 @@ sources:
 
 models:
   - name: daterange_days
+    description: |
+     "Date range in days starting from the start date configured in the `dbt_project.yml` up to the date of the last run,
+     "automatically extended up each build"
   
   - name: daterange_weekstart
 

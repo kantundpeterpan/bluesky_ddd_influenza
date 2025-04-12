@@ -31,6 +31,12 @@ tasks:
     flowId: case_data_ingestion
     namespace: digepi_zcde
 
+    # run dbt to build update the database
+  - id: run_dbt
+    type: io.kestra.plugin.core.flow.Subflow
+    flowId: run_dbt
+    namespace: digepi_zcde
+    
 triggers:
   - id: daily_midnight
     type: io.kestra.plugin.core.trigger.Schedule

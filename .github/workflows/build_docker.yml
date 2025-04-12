@@ -70,16 +70,3 @@ jobs:
           push: true
           tags: |
             docker.io/${{ github.repository_owner }}/digepi_bsky:latest
-            
-# docker.io/${{ github.repository_owner }}/bsky-housekeeping:${{ github.sha }} # Tag with commit SHA for traceability
-
- #     - name: Image digest
- #       run: echo "Digest: ${{ steps.build-push.outputs.digest }}"
-          push: true
-          tags: |
-            docker.io/${{ github.repository_owner }}/digepi_bsky:latest
-            
-# docker.io/${{ github.repository_owner }}/bsky-housekeeping:${{ github.sha }} # Tag with commit SHA for traceability
-
- #     - name: Image digest
- #       run: echo "Digest: ${{ steps.build-push.outputs.digest }}"

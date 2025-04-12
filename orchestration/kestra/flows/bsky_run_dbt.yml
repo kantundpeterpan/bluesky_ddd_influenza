@@ -22,6 +22,6 @@ tasks:
     #    DBT_BIGQUERY_METHOD: "service-account"
     #    DBT_BIGQUERY_DATASET: "bsky_ili"
     #    DBT_BIGQUERY_LOCATION: "europe-west1"
-        DBT_BIGQUERY_KEYFILE_JSON: '{"private_key":"{{ vars.bq.private_key}}", "client_email":"{{ vars.bq_client_email }}" }'
+        DBT_BIGQUERY_KEYFILE_JSON: '{"private_key":"{{ vars.bq_private_key}}", "client_email":"{{ vars.bq_client_email }}" }'
     commands:
       - cd /project/dbt/digepi_bsky && dbt build --profiles-dir .

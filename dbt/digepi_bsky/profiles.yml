@@ -1,0 +1,11 @@
+digepi_bsky:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: digepizcde
+      dataset: bsky_ili
+      location: europe-west1
+      # dataset: zoomcamp
+      threads: 8 # Must be a value of 1 or greater

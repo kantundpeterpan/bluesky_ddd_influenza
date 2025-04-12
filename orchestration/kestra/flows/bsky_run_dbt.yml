@@ -28,7 +28,6 @@ tasks:
     env:
         DBT_PROJECT: "{{ vars.bq_project_id }}"
         DBT_BIGQUERY_PRIVATE_KEY: "{{ vars.bq_private_key }}"
-        DBT_BIGQUERY_CLIENT_EMAIL: "{{ vars.bq_client_email }}"
         DBT_BIGQUERY_PRIVATE_KEY_ID: "{{ vars.bq_private_key_id }}"
         DBT_BIGQUERY_CLIENT_EMAIL: "{{ vars.bq_client_email }}"
         DBT_BIGQUERY_CLIENT_ID: "{{ vars.bq_client_id }}"

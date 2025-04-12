@@ -23,7 +23,6 @@ inputs:
   - id: end_date_str
     type: STRING
     required: false
-    defaults: "2025-04-09"
 
   - id: up_to_today
     type: BOOLEAN

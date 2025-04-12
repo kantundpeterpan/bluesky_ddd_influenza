@@ -1,0 +1,16 @@
+digepi_bsky:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account-json
+      project: digepizcde
+      dataset: bsky_ili
+      location: europe-west1
+      # dataset: zoomcamp
+      threads: 8 # Must be a value of 1 or greater
+      keyfile_json:
+        type: service_account
+        project_id: digepizcde
+        private_key: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY') }}"
+        client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"

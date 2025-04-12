@@ -19,9 +19,8 @@ tasks:
     containerImage: kantundpeterpan/digepi_bsky:latest
     env:
         DBT_PROJECT: "{{ secret('BIGQUERY_PROJECT_ID') }}"
-    #    DBT_BIGQUERY_METHOD: "service-account"
-    #    DBT_BIGQUERY_DATASET: "bsky_ili"
-    #    DBT_BIGQUERY_LOCATION: "europe-west1"
-        DBT_BIGQUERY_KEYFILE_JSON: '{"private_key":"{{ vars.bq_private_key}}", "client_email":"{{ vars.bq_client_email }}" }'
+        DBT_BIQUERY_PRIVATE_KEY: "{{ vars.bq_private_key }}"
+        DBT_BIQUERY_CLIENT_EMAIL: "{{ vars.bq_client_email}}"
+        
     commands:
-      - cd /project/dbt/digepi_bsky && dbt build --profiles-dir .
+      - cd /project/dbt/digepi_bsky && dbt build --profiles-dir ./docker_config

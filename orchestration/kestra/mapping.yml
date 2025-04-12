@@ -3,9 +3,16 @@ files:
   misc: "./misc.json"
 
 google_cloud:
-    private_key: "BIGQUERY_PRIVATE_KEY"
     project_id: "BIGQUERY_PROJECT_ID"
+    private_key_id: "BIGQUERY_PRIVATE_KEY_ID"
+    private_key: "BIGQUERY_PRIVATE_KEY"
     client_email: "BIGQUERY_CLIENT_EMAIL"
+    client_id: "BIGQUERY_CLIENT_ID"
+    auth_uri: "BIGQUERY_AUTH_URI"
+    token_uri: "BIGQUERY_TOKEN_URI"
+    auth_provider_x509_cert_url: "BIGQUERY_AUTH_PROVIDER_X509_CERT_URL"
+    client_x509_cert_url: "BIGQUERY_CLIENT_X509_CERT_URL"
+    universe_domain: "BIGQUERY_UNIVERSE_DOMAIN"
 
 misc:
   GITHUB_ACCESS_TOKEN: "GITHUB_ACCESS_TOKEN"

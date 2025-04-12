@@ -4,7 +4,15 @@ namespace: digepi_zcde
 variables:
   bq_private_key: "{{ secret('BIGQUERY_PRIVATE_KEY' ) }}"
   bq_client_email: "{{ secret('BIGQUERY_CLIENT_EMAIL') }}"
-
+  bq_project_id: "{{ secret('BIGQUERY_PROJECT_ID') }}"
+  bq_private_key_id: "{{ secret('BIGQUERY_PRIVATE_KEY_ID') }}"
+  bq_client_id: "{{ secret('BIGQUERY_CLIENT_ID') }}"
+  bq_auth_uri: "{{ secret('BIGQUERY_AUTH_URI') }}"
+  bq_token_uri: "{{ secret('BIGQUERY_TOKEN_URI') }}"
+  bq_auth_provider_x509_cert_url: "{{ secret('BIGQUERY_AUTH_PROVIDER_X509_CERT_URL') }}"
+  bq_client_x509_cert_url: "{{ secret('BIGQUERY_CLIENT_X509_CERT_URL') }}"
+  bq_universe_domain: "{{ secret('BIGQUERY_UNIVERSE_DOMAIN') }}"
+  
 tasks:
   - id: run_dbt
     type: io.kestra.plugin.scripts.shell.Commands
@@ -18,9 +26,16 @@ tasks:
         pullPolicy: ALWAYS
     containerImage: kantundpeterpan/digepi_bsky:latest
     env:
-        DBT_PROJECT: "{{ secret('BIGQUERY_PROJECT_ID') }}"
-        DBT_BIQUERY_PRIVATE_KEY: "{{ vars.bq_private_key }}"
-        DBT_BIQUERY_CLIENT_EMAIL: "{{ vars.bq_client_email}}"
-        
+        DBT_PROJECT: "{{ vars.bq_project_id }}"
+        DBT_BIGQUERY_PRIVATE_KEY: "{{ vars.bq_private_key }}"
+        DBT_BIGQUERY_CLIENT_EMAIL: "{{ vars.bq_client_email }}"
+        DBT_BIGQUERY_PRIVATE_KEY_ID: "{{ vars.bq_private_key_id }}"
+        DBT_BIGQUERY_CLIENT_EMAIL: "{{ vars.bq_client_email }}"
+        DBT_BIGQUERY_CLIENT_ID: "{{ vars.bq_client_id }}"
+        DBT_BIGQUERY_AUTH_URI: "{{ vars.bq_auth_uri }}"
+        DBT_BIGQUERY_TOKEN_URI: "{{ vars.bq_token_uri }}"
+        DBT_BIGQUERY_AUTH_PROVIDER_X509_CERT_URL: "{{ vars.bq_auth_provider_x509_cert_url }}"
+        DBT_BIGQUERY_CLIENT_X509_CERT_URL: "{{ vars.bq_client_x509_cert_url }}"
+        DBT_BIGQUERY_UNIVERSE_DOMAIN: "{{ vars.bq_universe_domain }}"
     commands:
       - cd /project/dbt/digepi_bsky && dbt build --profiles-dir ./docker_config

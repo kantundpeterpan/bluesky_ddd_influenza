@@ -1,0 +1,16 @@
+id: bsky_main_triggered
+namespace: digepi_zcde
+
+tasks:
+  - id: housekeeping
+    type: io.kestra.core.tasks.flows.Flow
+    flowId: bsky_housekeeping
+    namespace: digepi_zcde
+    inputs:
+      start_date_str: "{{ trigger.date | dateAdd(-1, 'DAYS') | date('yyyy-MM-dd') }}"
+
+triggers:
+  - id: daily_midnight
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 4 * * *" # Runs daily at 4am Paris time
+    timezone: Europe/Paris # Adjust timezone  

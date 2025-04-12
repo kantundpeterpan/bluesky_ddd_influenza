@@ -11,6 +11,9 @@ inputs:
       - rhume
       - fievre
       - courbature
+      - Schnupfen
+      - Fieber
+      - Muskelschmerzen
 
   - id: is_test
     type: BOOLEAN

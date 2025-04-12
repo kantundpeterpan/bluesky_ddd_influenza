@@ -14,9 +14,9 @@ sources:
     schema: bsky_posts
     tables:
       - name: grippe
-      - name: Schnupfen
-      - name: Fieber
-      - name: Muskelschmerzen
+      - name: schnupfen
+      - name: fieber
+      - name: muskelschmerzen
       - name: llm_hints
 
 models:

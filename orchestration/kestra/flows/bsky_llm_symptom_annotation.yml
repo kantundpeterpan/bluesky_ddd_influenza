@@ -27,7 +27,7 @@ tasks:
     tasks:
       - id: bsky_llm_symptom_annotation
         type: io.kestra.plugin.scripts.shell.Commands
-        timeout: PT15M
+        timeout: PT25M
         retry:
           type: constant
           maxAttempt: 3

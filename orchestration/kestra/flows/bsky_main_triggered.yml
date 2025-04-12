@@ -2,12 +2,34 @@ id: bsky_main_triggered
 namespace: digepi_zcde
 
 tasks:
+
+    # run the housekeeping queries
   - id: housekeeping
-    type: io.kestra.core.tasks.flows.Flow
+    type: io.kestra.plugin.core.flow.Subflow
     flowId: bsky_housekeeping
     namespace: digepi_zcde
     inputs:
       start_date_str: "{{ trigger.date | dateAdd(-1, 'DAYS') | date('yyyy-MM-dd') }}"
+
+    # run the post extraction query
+  - id: post_extraction
+    type: io.kestra.plugin.core.flow.Subflow
+    flowId: bsky_posts
+    namespace: digepi_zcde
+    inputs:
+      start_date_str: "{{ trigger.date | dateAdd(-1, 'DAYS') | date('yyyy-MM-dd') }}"
+
+    # run post annotation
+  - id: llm_symptom_annotation
+    type: io.kestra.plugin.core.flow.Subflow
+    flowId: bsky_llm_symptom_annotation
+    namespace: digepi_zcde
+
+    # ingest the most recent case data
+  - id: case_data_ingestion
+    type: io.kestra.plugin.core.flow.Subflow
+    flowId: case_data_ingestion
+    namespace: digepi_zcde
 
 triggers:
   - id: daily_midnight

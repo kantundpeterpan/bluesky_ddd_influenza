@@ -46,7 +46,7 @@ def run(
 
     # Construct the SQL query to fetch records from BigQuery.
     sql_query = f"""SELECT uri, record__text 
-    FROM {query_kw} 
+    FROM {query_kw.lower()} 
     WHERE record__langs LIKE '{language}' AND
     uri NOT IN (
         SELECT uri FROM llm_hints

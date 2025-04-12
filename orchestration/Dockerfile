@@ -1,13 +1,14 @@
-FROM python:3.13-slim-bookworm
+# FROM python:3.13-slim-bookworm
+FROM kantundpeterpan/digepi_bsky_env:latest
 
 # Install necessary tools
-RUN apt-get update && \
-    apt-get install -y git curl && \
-    rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && \
+#     apt-get install -y git curl && \
+#     rm -rf /var/lib/apt/lists/*
 
-# Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
-    mv /root/.local/bin/uv /usr/local/bin/
+# # Install uv
+# RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+#     mv /root/.local/bin/uv /usr/local/bin/
 
 # Clone the repository
 RUN git clone https://github.com/kantundpeterpan/bluesky_ddd_influenza.git /project

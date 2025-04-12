@@ -1,0 +1,20 @@
+FROM python:3.13-slim-bookworm
+
+# Install necessary tools
+RUN apt-get update && \
+    apt-get install -y git curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    mv /root/.local/bin/uv /usr/local/bin/
+
+# Clone only the requirements.txt file
+RUN git init
+RUN git remote add origin https://github.com/kantundpeterpan/bluesky_ddd_influenza.git
+RUN git config core.sparsecheckout true
+RUN echo "requirements.txt" >> .git/info/sparse-checkout
+RUN git pull origin main
+RUN uv pip install -r requirements.txt --system
+RUN rm requirements.txt
+

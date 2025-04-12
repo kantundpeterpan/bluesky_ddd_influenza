@@ -1,0 +1,23 @@
+id: run_dbt
+namespace: digepi_zcde
+
+tasks:
+  - id: run_dbt
+    type: io.kestra.plugin.scripts.shell.Commands
+    timeout: PT25M
+    retry:
+        type: constant
+        maxAttempt: 3
+        interval: PT10S
+    taskRunner:
+        type: io.kestra.plugin.scripts.runner.docker.Docker
+        pullPolicy: ALWAYS
+    containerImage: kantundpeterpan/digepi_bsky:latest
+    env:
+        DBT_PROJECT: "{{ secret('BIGQUERY_PROJECT_ID') }}"
+        DBT_BIGQUERY_METHOD: "service-account"
+        DBT_BIGQUERY_DATASET: "bsky_ili"
+        DBT_BIGQUERY_LOCATION: "europe-west1"
+        DBT_BIGQUERY_KEYFILE_JSON: '{"private_key":"{{ secret('BIGQUERY_PRIVATE_KEY') }}", "client_email":{{ secret('BIGQUERY_CLIENT_EMAIL') }} }'
+    commands:
+      - cd /project/dbt/digepi_bsky && dbt build

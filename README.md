@@ -121,10 +121,62 @@ The figure shows as an example of combining WHO surveillance data with
 
 ![](./zcde_docs/img/dbt_lineage_de.png)
 
+# Time Series forecasting
+
+# CI/CD
+
 # Workflow automation with `kestra`
+
+The pipeline is orchestrated using `kestra`. Basically, there is one
+flow defined for each extraction pipeline, building all the tables using
+`dbt` and fitting the machine learning models. (see
+[flows](./orchestration/kestra/flows/)).
+
+All flows are chained together in a [main
+flow](./orchestration/kestra/flows/bsky_main_triggered.yml) which is
+triggered each night to ingest and process the data of the preceeding
+day.
 
 ## Secrets and credentials handling
 
-## Flow organizations
+In the open-source version of `kestra`, secrets are handled via
+environement variables that need to be `base64` encoded, prefixed with
+`SECRET_` and passed to the the docker container on startup. I created a
+python commandline tool that abstracts some of the complexity :
+[`kestra_secret_encoder`](https://github.com/kantundpeterpan/kestra_secret_encoder).
 
-# Time Series forecasting
+### `dlt`
+
+When `dlt` does not find a `secrets.toml` file, it looks for credentials
+in using specifically named environment variables. For BigQuery:
+
+\`\`\`yaml ./orchestration/kestra/flows/bsky_housekeeping.yml …
+
+env:  
+DESTINATION\_\_BIGQUERY\_\_CREDENTIALS\_\_PROJECT_ID: “{{
+secret(‘BIGQUERY_PROJECT_ID’) }}”
+DESTINATION\_\_BIGQUERY\_\_CREDENTIALS\_\_PRIVATE_KEY: “{{
+secret(‘BIGQUERY_PRIVATE_KEY’) }}”
+DESTINATION\_\_BIGQUERY\_\_CREDENTIALS\_\_CLIENT_EMAIL: “{{
+secret(‘BIGQUERY_CLIENT_EMAIL’) }}”
+
+…
+
+
+    (taken from [./orchestration/kestra/flows/bsky_housekeeping.yml](./orchestration/kestra/flows/bsky_housekeeping.yml))
+
+
+    ### `dbt`
+
+    For the production runs of `dbt` a special [`docker_config/profiles.yml`](./dbt/digepi_bsky/docker_config/profiles.yml) is used with
+
+    ```bash
+    dbt build --profiles-dir ./docker_config
+
+during the runs.
+
+It reads the credentials from environment variables:
+
+`yaml docker_config/profiles.yaml ... keyfile_json:         type: service_account         project_id: digepizcde         private_key: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY') }}"         client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"         private_key_id: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY_ID') }}"         client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}" ...`
+
+## Flow organizations

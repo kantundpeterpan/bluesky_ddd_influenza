@@ -24,11 +24,11 @@ SELECT
   i.ari_pop_cov,
   CASE
     WHEN i.ili_case IS NULL OR i.ili_pop_cov IS NULL THEN NULL
-    ELSE i.ili_case / (i.ili_pop_cov + 1)
+    ELSE i.ili_case / i.ili_pop_cov
   END as ili_incidence,
   CASE
     WHEN i.ari_case IS NULL OR i.ari_pop_cov IS NULL THEN NULL
-    ELSE i.ari_case / (i.ari_pop_cov + 1)
+    ELSE i.ari_case / i.ari_pop_cov
   END as ari_incidence
 FROM {{ ref('daterange_weekstart') }} dr
 LEFT JOIN (

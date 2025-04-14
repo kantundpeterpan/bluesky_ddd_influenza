@@ -21,8 +21,8 @@ WITH grippe_fr AS
     total as (
     SELECT 
         iso_weekstartdate,
-        SUM(COALESCE(g.post_count, 0)) as grippe_posts,
-        SUM(COALESCE(r.post_count, 0)) as rest_posts,
+        SUM(g.post_count) as grippe_posts,
+        SUM(r.post_count) as rest_posts,
     FROM {{ ref('daterange_weekstart') }} d
     LEFT JOIN grippe_fr g
         on d.iso_weekstartdate = g.period_start

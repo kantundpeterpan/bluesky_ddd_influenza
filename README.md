@@ -150,33 +150,50 @@ python commandline tool that abstracts some of the complexity :
 When `dlt` does not find a `secrets.toml` file, it looks for credentials
 in using specifically named environment variables. For BigQuery:
 
-\`\`\`yaml ./orchestration/kestra/flows/bsky_housekeeping.yml …
+<div class="code-with-filename">
 
-env:  
-DESTINATION\_\_BIGQUERY\_\_CREDENTIALS\_\_PROJECT_ID: “{{
-secret(‘BIGQUERY_PROJECT_ID’) }}”
-DESTINATION\_\_BIGQUERY\_\_CREDENTIALS\_\_PRIVATE_KEY: “{{
-secret(‘BIGQUERY_PRIVATE_KEY’) }}”
-DESTINATION\_\_BIGQUERY\_\_CREDENTIALS\_\_CLIENT_EMAIL: “{{
-secret(‘BIGQUERY_CLIENT_EMAIL’) }}”
+**./orchestration/kestra/flows/bsky_housekeeping.yml**
 
-…
+``` yaml
+env:      
+  DESTINATION__BIGQUERY__CREDENTIALS__PROJECT_ID: "{{ secret('BIGQUERY_PROJECT_ID') }}"
+  DESTINATION__BIGQUERY__CREDENTIALS__PRIVATE_KEY: "{{ secret('BIGQUERY_PRIVATE_KEY') }}"
+  DESTINATION__BIGQUERY__CREDENTIALS__CLIENT_EMAIL: "{{ secret('BIGQUERY_CLIENT_EMAIL') }}"
+```
 
+</div>
 
-    (taken from [./orchestration/kestra/flows/bsky_housekeeping.yml](./orchestration/kestra/flows/bsky_housekeeping.yml))
+(taken from
+[./orchestration/kestra/flows/bsky_housekeeping.yml](./orchestration/kestra/flows/bsky_housekeeping.yml))
 
+### `dbt`
 
-    ### `dbt`
+For the production runs of `dbt` a special
+[`docker_config/profiles.yml`](./dbt/digepi_bsky/docker_config/profiles.yml)
+is used with
 
-    For the production runs of `dbt` a special [`docker_config/profiles.yml`](./dbt/digepi_bsky/docker_config/profiles.yml) is used with
-
-    ```bash
-    dbt build --profiles-dir ./docker_config
+``` bash
+dbt build --profiles-dir ./docker_config
+```
 
 during the runs.
 
 It reads the credentials from environment variables:
 
-`yaml docker_config/profiles.yaml ... keyfile_json:         type: service_account         project_id: digepizcde         private_key: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY') }}"         client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"         private_key_id: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY_ID') }}"         client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}" ...`
+<div class="code-with-filename">
+
+**dbt/digepi_bskydocker_config/profiles.yaml**
+
+``` yaml
+keyfile_json:
+        type: service_account
+        project_id: digepizcde
+        private_key: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY') }}"
+        client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"
+        private_key_id: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY_ID') }}"
+        client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"
+```
+
+</div>
 
 ## Flow organizations

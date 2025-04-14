@@ -264,7 +264,90 @@ keyfile_json:
 `kestra` is connected to the repo using a webhook which triggers a
 `Sync Git` flow on each push.
 
-# Current deployement
+# Current deployment
 
 A `kestra` instance is running on my cloud machine using
 `docker-compose`.
+
+# Reproducibility
+
+## Cloud setup
+
+1.  Create a new Google cloud project
+2.  Setup a service account for this project
+3.  Download your `.json` keyfile
+
+## Local setup
+
+1.  Clone the repository
+
+``` bash
+git clone https://github.com/kantundpeterpan/bluesky_ddd_influenza.git
+```
+
+2.  Install `kestra_secret_encoder`
+
+``` bash
+pip install git+https://github.com/kantundpeterpan/kestra_secret_encoder
+```
+
+### Use `kestra`
+
+- Update `orchestration/kestra/mapping.yml` (remove the `misc` section)
+
+``` yaml
+files:
+  google_cloud: "/path/to/your/service/account/key/json"
+
+google_cloud:
+    project_id: "BIGQUERY_PROJECT_ID"
+    private_key_id: "BIGQUERY_PRIVATE_KEY_ID"
+    private_key: "BIGQUERY_PRIVATE_KEY"
+    client_email: "BIGQUERY_CLIENT_EMAIL"
+    client_id: "BIGQUERY_CLIENT_ID"
+    auth_uri: "BIGQUERY_AUTH_URI"
+    token_uri: "BIGQUERY_TOKEN_URI"
+    auth_provider_x509_cert_url: "BIGQUERY_AUTH_PROVIDER_X509_CERT_URL"
+    client_x509_cert_url: "BIGQUERY_CLIENT_X509_CERT_URL"
+    universe_domain: "BIGQUERY_UNIVERSE_DOMAIN"
+```
+
+- Encode environment secrets for `kestra`
+
+``` bash
+cd orchestration/kestra
+kestra_secret_encoder mapping.yml
+```
+
+- Fire up `kestra`
+
+``` bash
+docker-compose up -d
+```
+
+- Run a backfill for the `bsky_main` flow (the `llm_annotation` flow
+  will if you do not provide the `OPENROUTER_API_KEY` environment
+  variable)
+
+### Using the repo container interactively
+
+- Fire up the container in interactive mode
+
+``` bash
+cd review
+BIGQUERY_LOCATION=europe-west1 ./run_pipeline_container.sh path/to/service/account/json BIGQUERY
+```
+
+- Once in the container, run a `dlt` pipeline, `dbt` etc.
+
+``` bash
+cd /project/pipelines/bsky_housekeeping
+# run pipeline to count posts matching query=trump on 2025-04-10
+python bsky_housekeeping_pipeline.py trump 2025-04-10
+```
+
+``` bash
+cd /project/dbt/digepi_bsky
+# run dbt debug with profiles.yml configured with env variables
+dbt debug --profiles-dir ./docker_config
+```

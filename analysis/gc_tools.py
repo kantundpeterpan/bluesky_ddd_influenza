@@ -23,7 +23,9 @@ def create_service_account_credentials():
         return credentials
 
     except KeyError as e:
-        print(f"Error: Missing environment variable: {e}")
+        credentials = service_account.Credentials.from_service_account_file(
+            '../.gc_creds/digepizcde-71333237bf40.json'
+        )
         return None
     except Exception as e:
         print(f"An error occurred: {e}")

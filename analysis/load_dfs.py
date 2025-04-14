@@ -14,13 +14,9 @@ from typing import Optional, List
 
 _here_dir = Path(__file__).parent
 
-credentials_local = service_account.Credentials.from_service_account_file(
-    '../.gc_creds/digepizcde-71333237bf40.json')
+
 
 def load_post_count_ili(lang: str = 'fr', credentials: service_account.Credentials = None):
-
-    if not credentials:
-        credentials = credentials_local
 
     post_count_ili_sql = f"SELECT * FROM `digepizcde.bsky_ili.bsky_ili_{lang}` ORDER BY date"
     post_count_ili_df = pandas_gbq.read_gbq(
@@ -34,8 +30,6 @@ def load_post_count_ili(lang: str = 'fr', credentials: service_account.Credentia
 
 def load_post_count_ili_upsampled(lang: str = 'fr', credentials: service_account.Credentials = None):
 
-    if not credentials:
-        credentials = credentials_local
     
     post_count_ili_sql = f"SELECT * FROM `digepizcde.bsky_ili.bsky_ili_{lang}_daily` ORDER BY date"
     post_count_ili_daily_df = pandas_gbq.read_gbq(
@@ -69,10 +63,7 @@ def load_merged_posts_ww(min_weeks = 12, min_mentions = 10):
     return post_count_ili_df
 
 def load_llm_filtered_post_count(credentials: service_account.Credentials = None):
-
-    if not credentials:
-        credentials = credentials_local
-
+    
     llm_filtered_post_count_sql ="SELECT date, llm_post_count, ili_incidence, rest_posts FROM `digepizcde.bsky_ili.bsky_ili_fr_llm_filtered` ORDER BY date"
     llm_filtered_post_count = pandas_gbq.read_gbq(
         llm_filtered_post_count_sql, credentials=credentials

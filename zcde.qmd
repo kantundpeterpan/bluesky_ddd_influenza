@@ -85,6 +85,12 @@ The figure shows as an example of combining WHO surveillance data with `bluesky`
 
 # CI/CD
 
+Continuous deployment is accomplished using `github` actions (see [](.github/workflows/)).
+
+The final container build is split in two parts on each push:
+
+1. If `requirements.txt` has changed the environment container defined in [](./orchestration/Dockerfile_env) is built and pushed to dockerhub (`kantundpeterpan/digepi_bsky_env`).
+2. Based on the environment image, the actual pipeline image ([](./orchestration/Dockerfile)) is built and pushed to dockerhub (`kantundpeterpan/digepi_bsky`).
 
 
 # Workflow automation with `kestra`
@@ -92,6 +98,17 @@ The figure shows as an example of combining WHO surveillance data with `bluesky`
 The pipeline is orchestrated using `kestra`. Basically, there is one flow defined for each extraction pipeline, building all the tables using `dbt` and fitting the machine learning models. (see [flows](./orchestration/kestra/flows/)).
 
 All flows are chained together in a [main flow](./orchestration/kestra/flows/bsky_main_triggered.yml) which is triggered each night to ingest and process the data of the preceeding day.
+
+## `kestra` task runner
+
+All flows / tasks in `kestra` use the docker container built based on the `github` repo as task runner.
+
+```yaml
+taskRunner:
+  type: io.kestra.plugin.scripts.runner.docker.Docker
+  pullPolicy: ALWAYS
+containerImage: kantundpeterpan/digepi_bsky:latest
+```
 
 ## Secrets and credentials handling
 

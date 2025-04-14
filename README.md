@@ -23,6 +23,8 @@ obvious reasons, this kind of study is not feasible anymore and
 
 # Pipeline schema
 
+![](./zcde_docs/img/pipeline_graph.svg)
+
 # Tools
 
 # Data Sources

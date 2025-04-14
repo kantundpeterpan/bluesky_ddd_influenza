@@ -1,116 +1,128 @@
+# `bluesky` social network analysis pipeline
 
 
-# TODOs
+Social media platforms have increasingly become valuable sources of
+real-time information, reflecting public sentiment and behavior. This
+project explores the potential of Bluesky, a relatively new social media
+platform, for digital disease detection (DDD), specifically focusing on
+influenza-like illness (ILI). By building an end-to-end data pipeline to
+collect, process, and analyze Bluesky data in conjunction with
+traditional epidemiological data sources from organizations like the WHO
+and CDC, this project aims to assess the feasibility and effectiveness
+of using Bluesky as an early warning system for disease outbreaks.
 
-## Official data
+This is combined project for the 2025 Data Engineering Zoomcamp and my
+course in Digital Epidemiology at Hasselt University.
 
-- [ ] US data parsing
+The idea is to extract an epidemiological signal from social media posts
+by counting posts matching queries related to ILI and correlate them
+with public health surveillance data. Similar studies have been
+performed using data from `twitter` who yielded promising results. For
+obvious reasons, this kind of study is not feasible anymore and
+`blueksy` is a potential alternative.
 
-## Data engineering
+# Pipeline schema
 
-- kestra docker
+# Tools
 
-``` mermaid
-graph LR
-    subgraph kestra 
-        dlt(dlt) --- posts
-        llm --- bqstaging
-        llm -- annotation --> bqstaging
-        posts --> bqstaging[<b>GBQ</b> \n stage area \n 1 table per kw]
-        dlt -- housekeeping --> count
-        dlt -- case data --> who_tables
-        dlt -- case data --> cdc_tables
-        subgraph BigQuery data lake
-          bqstaging
-          who_tables
-          cdc_tables
-          count[post counts table]
-        end
-        bqstaging --- dbt
-        who_tables --- dbt
-        cdc_tables --- dbt
-        count --- dbt
-        dbt --> bq[Google \n BigQuery]
-        subgraph BigQuery data warehoue
-          bq
-        end
-    end
+# Data Sources
 
-    bsky[bsky API] --> dlt
-    WHO --> dlt
-    CDC --> dlt
-    bq --> looker[Looker studio \n dashboard]
-    bq -- python --> stat1[Statistical analysis]
-    bq -- python --> stat2[Machine learning, modeling]
+- **Bluesky API**: This provides real-time access to posts and user data
+  on the Bluesky platform.
+
+- **WHO Data**: Data from the World Health Organization (WHO) serves as
+  a crucial epidemiological reference, offering reliable statistics on
+  influenza and other diseases, but there are delays in publication.
+
+- **CDC Data**: Similar to the WHO, the Centers for Disease Control and
+  Prevention (CDC) provides valuable data on disease prevalence and
+  trends in the United States, but the dataset granularity is weekly. Up
+  to December 2024 the data from the CDC were also incorporated into the
+  WHO data but the data transmission to the WHO was stopped by the Trump
+  administration.
+
+# Data ingestion
+
+The data extraction and ingestion to the BigQuery staging area (data
+lake if you will) uses out-of-the-box functionality of `dlt` especially
+denormalization of the `json` data for `bluesky` posts.
+
+Each pipeline is instantiated using the
+`dlt init <source> <destination>`, which creates the `.dlt/` directory
+containing the necessary configuration files.
+
+Credentials necessary to run the pipeline are stored in
+`.dlt/secrets.toml` which are used for testing and locally initiated
+runs of the pipeline.
+
+In production, credentials are read from environment variables, see the
+paragraph on [workflow
+orchestration](#secrets-and-credentials-handling).
+
+## Bluesky API
+
+Two `dlt` pipelines were built using the [`bluesky`
+API](http://public.api.bsky.app/).
+
+### `bluesky` posts
+
+``` bash
+Usage: bsky_post_pipeline.py QUERY START_DATE <flags>
+  optional flags:        --end_date | --out_file | --n_jobs | --verbose
 ```
 
-- modeling as batch processing pipeline
-- run once per day at midnight for the preceding day
-- for each data ingestion step a `dlt` pipeline is created which has an
-  equivalent `kestra` flow
+This pipeline retrieves posts matching a given search query on a given
+date or during a specified time window. It runs in parallel using at
+max. 50 connections/threads. The retrieved posts are transferred to
+BigQuery by `dlt`, each query has its own table.
 
-### `dlt` pipelines
+### `bluesky` post counts
 
-- one pipeline run should extract posts/counts for a single day
-- kestra backfills will be used to retrieve historical data
-- thus, dlt incremental load can be used
+``` bash
+Usage: bsky_housekeeping_pipeline.py QUERY START_DATE <flags>
+  optional flags:        --end_date | --out_file | --n_jobs | --verbose
+```
 
-### `kestra` flows
+This pipeline is very similar to the `bsky_posts` pipeline. It is named
+`housekeeping` as it retrieves only aggregated post counts per query per
+date which serves as an indicator for overall user activity on
+`bluesky`.
 
-#### Post counts
+## WHO Data
 
-- [ ] “backfill” flow that can retrieve post counts for a given query
-  keywords over a date range
-- [ ] “triggered” flow that extracts the post counts for single day and
-  will be triggered daily for continous data collection
+``` bash
+Usage: who_ili_pipeline.py "{fluid | flunet}" <flags>
+  optional flags:        --verbose
+```
 
-#### Pull messages
+Case data from the WHO are available in two datasets: `FluID` and
+`FluNet` which are made available in `.csv` files. `pandas` is used to
+load these files and `dlt` transfers them to a table in BigQuery.
 
-- [ ] “backfill” flow that can retrieve posts for a given query keyword
-  over a date range
-- [ ] “triggered” flow that extracts the post counts for single day and
-  will be triggered daily for continous data collection
+## CDC Data, RKI Data
 
-#### LLM symptom extraction
+Similar pipelines are implemented for data from the Centers for Disease
+Control and Prevention (CDC) and the Robert-Koch-Institute (RKI), the
+public health agencies of the USA and Germany, respectively. These
+pipelines are not used in the current project but might be in the
+future.
 
-- [x] this pipeline/flow should exclude posts that alread have been
-  treated
+# Data Transformation
 
-- [ ] handle edge case of no message to label
+Data transformation from the BigQuery staging area to the BigQuery data
+warehouse is accomplished using `dbt`. There is some complexity in
+aligning the time series of post counts from `bluesky` (daily data) to
+the public health data which is available aggregated by week.
 
-- case data:
+The figure shows as an example of combining WHO surveillance data with
+`bluesky` post counts in German.
 
-  - WHO
-    - [ ] flunet
-    - [ ] fluid
-  - [ ] CDC
-    - gives only weeks –\> date parsing
-  - sentinelles ???
+![](./zcde_docs/img/dbt_lineage_de.png)
 
-### `dbt` models
+# Workflow automation with `kestra`
 
-- per language, per day housekeeping activity
+## Secrets and credentials handling
 
-- per day ILI keyword msg counts:
+## Flow organizations
 
-  - long format:A
-    - day (index)
-    - language
-    - keyword
-    - count
-
-- per language, per day LLM identified
-
-  - long format:
-    - day (index)
-    - count ili_related
-
-## Data analysis
-
-- correlation analysis
-
-- modeling
-
-  - word count vecotrs
-  - BERT embeddings
-  - before/after LLM ili_related filtering
+# Time Series forecasting

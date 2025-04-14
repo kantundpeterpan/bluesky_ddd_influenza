@@ -65,8 +65,7 @@ def run(
     query: str,
     start_date: str,
     end_date: Optional[str] = None,
-    out_file: str = None,
-    n_jobs: int = os.cpu_count(),
+    n_jobs: int = 50,
     verbose: bool = True
 ):
     

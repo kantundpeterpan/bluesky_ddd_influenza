@@ -1,4 +1,5 @@
 ---
+mermaid-format: svg
 format:
   gfm:
     output-ext: "md"

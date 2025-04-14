@@ -271,7 +271,14 @@ def get_posts_adaptive_sliding_window_reverse(query: str, start_date: str, end_d
                 post['embed'] = sanitize_strings_in_record(
                     embed, sanitize_string_with_emojis
                 )
-            created_at = record.get("createdAt")
+
+            # handle inconsistency between indexedAt and createdAt
+            # to avoid infinite loops in the closing window approach
+            indexed_at = post.get('indexedAt')
+            created_at = record.get('createdAt')
+            created_at = created_at if indexed_at is None else min(created_at, indexed_at)
+
+            # created_at = record.get("createdAt")
             if created_at:
                 post_datetime = datetime.fromisoformat(created_at.replace("Z", "+00:00")).astimezone(
                     timezone.utc)  # Ensure UTC

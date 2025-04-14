@@ -27,6 +27,14 @@ obvious reasons, this kind of study is not feasible anymore and
 
 # Tools
 
+**Data Extraction and Loading** - `dlt`: data load tool
+
+**Data warehouse** - Google BigQuery
+
+**Data Transformation** - `dbt`: data build tool
+
+\*\*
+
 # Data Sources
 
 - **Bluesky API**: This provides real-time access to posts and user data
@@ -210,14 +218,17 @@ It reads the credentials from environment variables:
 
 ``` yaml
 keyfile_json:
-        type: service_account
-        project_id: digepizcde
-        private_key: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY') }}"
-        client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"
-        private_key_id: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY_ID') }}"
-        client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"
+  type: service_account
+  project_id: digepizcde
+  private_key: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY') }}"
+  client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"
+  private_key_id: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY_ID') }}"
+  client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"
 ```
 
 </div>
 
-## Flow organizations
+## Flow updates
+
+`kestra` is connected to the repo using a webhook which triggers a
+`Sync Git` flow on each push.

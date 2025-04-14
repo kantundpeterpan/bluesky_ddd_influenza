@@ -1,12 +1,14 @@
 ```{mermaid}
 graph LR
-    subgraph kestra[<img src="https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/kestra.svg" width="100px"/> kestra]
+    subgraph kestra[ ]
+        kestra1[<img src="https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/kestra.png"/>]
         bqicon
         bqdw 
-        dlt(<img src="https://dlthub.com/docs/assets/images/dlt-pacman-b67f01290996fde3a5a12edbde2186bc.gif"/>) --- posts
+        python[<img src="https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/python.svg" width="20px"/>]
+        dlt(<img src="https://dlthub.com/docs/assets/images/dlt-pacman-b67f01290996fde3a5a12edbde2186bc.gif"/>)
         llm --- bqstaging
         llm -- annotation --> bqstaging
-        posts --> bqstaging[1 table per kw]
+        dlt -- posts --> bqstaging[1 table per kw]
         dlt -- housekeeping --> count
         dlt -- case data --> who_tables
         dlt -- case data --> cdc_tables
@@ -21,10 +23,10 @@ graph LR
         who_tables --- dbt
         cdc_tables --- dbt
         count --- dbt
-        dbt --> bq
+        dbt[<img src="https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/dbt.png" width="100px"/>] --> bq
         subgraph BigQuery data warehouse
           bqdw[<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/bq.png' width="20px"/>]  
-          bq
+          bq[joined per country data]
         end
     end
 
@@ -32,6 +34,6 @@ graph LR
     WHO[<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/who.png' width="20px"/> WHO FluMart] --> dlt
     CDC[<img src="https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/cdc.png" width="20px"/> CDC] --> dlt
     bq --> looker[<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/lookerstudio.png' width="20px"/> Dashboard]
-    bq -- python --> stat1[Statistical analysis]
-    bq -- python --> stat2[Machine learning, modeling]
+    bq --- python
+    python --> bq
 ```

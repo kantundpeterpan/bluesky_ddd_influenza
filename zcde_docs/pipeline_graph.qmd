@@ -5,7 +5,7 @@ graph LR
         bqicon
         bqdw 
         python[<img src="https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/python.svg" width="20px"/>]
-        dlt(<img src="https://dlthub.com/docs/assets/images/dlt-pacman-b67f01290996fde3a5a12edbde2186bc.gif"/>)
+        dlt(<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/dlt.png' width="20px"/>)
         llm --- bqstaging
         llm -- annotation --> bqstaging
         dlt -- posts --> bqstaging[1 table per kw]
@@ -36,4 +36,8 @@ graph LR
     bq --> looker[<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/lookerstudio.png' width="20px"/> Dashboard]
     bq --- python
     python --> bq
+    git[<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/github.png' width="20px"/>]
+    dockerhub[<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/dockerhub.jpg' width="20px"/>]
+    git --> dockerhub
+    dockerhub --> kestra1
 ```

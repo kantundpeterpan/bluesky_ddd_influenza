@@ -1,0 +1,37 @@
+```{mermaid}
+graph LR
+    subgraph kestra[<img src="https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/kestra.svg" width="100px"/> kestra]
+        bqicon
+        bqdw 
+        dlt(<img src="https://dlthub.com/docs/assets/images/dlt-pacman-b67f01290996fde3a5a12edbde2186bc.gif"/>) --- posts
+        llm --- bqstaging
+        llm -- annotation --> bqstaging
+        posts --> bqstaging[1 table per kw]
+        dlt -- housekeeping --> count
+        dlt -- case data --> who_tables
+        dlt -- case data --> cdc_tables
+        subgraph BigQuery staging
+          bqicon[<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/bq.png' width="10px"/>]
+          bqstaging
+          who_tables
+          cdc_tables
+          count[post counts table]
+        end
+        bqstaging --- dbt
+        who_tables --- dbt
+        cdc_tables --- dbt
+        count --- dbt
+        dbt --> bq
+        subgraph BigQuery data warehouse
+          bqdw[<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/bq.png' width="20px"/>]  
+          bq
+        end
+    end
+
+    bsky[<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/bluesky_logo.png' width="20px"/> bsky API] --> dlt
+    WHO[<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/who.png' width="20px"/> WHO FluMart] --> dlt
+    CDC[<img src="https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/cdc.png" width="20px"/> CDC] --> dlt
+    bq --> looker[<img src='https://raw.githubusercontent.com/kantundpeterpan/bluesky_ddd_influenza/main/zcde_docs/img/lookerstudio.png' width="20px"/> Dashboard]
+    bq -- python --> stat1[Statistical analysis]
+    bq -- python --> stat2[Machine learning, modeling]
+```

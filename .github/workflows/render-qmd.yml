@@ -20,7 +20,7 @@ jobs:
       - name: Render Quarto Files
         shell: bash
         run: |
-          find . -name "scratchpad.qmd" -exec quarto render {} \;
+          find . -name "zcde.qmd" -exec quarto render {} \;
           
       - name: Commit and push changes
         run: |

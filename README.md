@@ -23,7 +23,7 @@ obvious reasons, this kind of study is not feasible anymore and
 
 # Pipeline schema
 
-![](./zcde_docs/img/pipeline_graph.svg)
+![](./zcde_docs/img/pipeline_graph.jpeg)
 
 # Tools
 

@@ -20,13 +20,15 @@ def create_service_account_credentials():
         }
 
         credentials = service_account.Credentials.from_service_account_info(credentials_info)
+        print('credentials from env variables ... OK')
         return credentials
 
     except KeyError as e:
+        print("falling back to keyfile")
         credentials = service_account.Credentials.from_service_account_file(
             '../.gc_creds/digepizcde-71333237bf40.json'
         )
-        return None
+        return credentials
     except Exception as e:
         print(f"An error occurred: {e}")
         return None

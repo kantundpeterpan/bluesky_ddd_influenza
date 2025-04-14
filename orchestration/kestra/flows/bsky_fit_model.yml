@@ -57,6 +57,6 @@ tasks:
         BIGQUERY_UNIVERSE_DOMAIN: "{{ vars.bq_universe_domain }}"
 
     commands:
-      - cd /project/analysis/ && python model_fit.py --restrict_model --output_path models/histgrad_no_split_restrict_de  --figure_path figures_de --dataset grippe_posts_de --target_col ari_incidence
-      - cd /project/analysis/ && python model_fit.py --restrict_model --output_path models/histgrad_no_split_restrict_fr  --figure_path figures_fr --dataset grippe_posts_fr --target_col ili_incidence
+      - cd /project/analysis/ && python model_fit.py --restrict_model --output_path models/histgrad_no_split_restrict_de  --figure_path figures_de --dataset grippe_posts_de --target_col ari_incidence --gc_creds_env
+      - cd /project/analysis/ && python model_fit.py --restrict_model --output_path models/histgrad_no_split_restrict_fr  --figure_path figures_fr --dataset grippe_posts_fr --target_col ili_incidence --gc_creds_env
       - cd /project/dbt/digepi_bsky && dbt seed --profiles-dir ./docker_config

@@ -38,7 +38,7 @@ done
 echo "Environment variables exported from '$json_file' with prefix '$prefix'."
 
 kestra_secret_encoder gc_from_env.yml --no_encode --prefix '' -o .env
-docker run -it --env-file .env kantundpeterpan/digepi_bsky:latest /bin/sh
+docker run -it --env-file .env kantundpeterpan/digepi_bsky:latest /bin/bash
 rm .env
 
 exit 0

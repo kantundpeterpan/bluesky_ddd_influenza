@@ -15,25 +15,44 @@ This is combined project for the 2025 Data Engineering Zoomcamp and my
 course in Digital Epidemiology at Hasselt University.
 
 The idea is to extract an epidemiological signal from social media posts
-by counting posts matching queries related to ILI and correlate them
+by counting posts that match queries related to ILI and correlate them
 with public health surveillance data. Similar studies have been
 performed using data from `twitter` who yielded promising results. For
 obvious reasons, this kind of study is not feasible anymore and
-`blueksy` is a potential alternative.
+`bluesky` is a potential alternative.
+
+While this pipeline is geared towards a public health application, it
+should be easily adaptable to any kind of trend analysis using keyword
+search on the `bluesky` API.
 
 # Pipeline schema
 
 ![](./zcde_docs/img/pipeline_graph.jpeg)
 
+# Dashboard
+
+[![](./zcde_docs/img/dashboard.png)](https://lookerstudio.google.com/reporting/a9630c22-4d4c-4a90-bc8b-ed659a88020c)
+
+The final dashboard is available
+[here](https://lookerstudio.google.com/reporting/a9630c22-4d4c-4a90-bc8b-ed659a88020c)
+
 # Tools
 
-**Data Extraction and Loading** - `dlt`: data load tool
+**Data Extraction and Loading**
 
-**Data warehouse** - Google BigQuery
+- `dlt`: data load tool
 
-**Data Transformation** - `dbt`: data build tool
+**Data warehouse**
 
-\*\*
+- Google BigQuery
+
+**Data Transformation**
+
+- `dbt`: data build tool
+
+**Dashboarding**
+
+- Google Looker Studio
 
 # Data Sources
 
@@ -114,8 +133,8 @@ load these files and `dlt` transfers them to a table in BigQuery.
 Similar pipelines are implemented for data from the Centers for Disease
 Control and Prevention (CDC) and the Robert-Koch-Institute (RKI), the
 public health agencies of the USA and Germany, respectively. These
-pipelines are not used in the current project but might be in the
-future.
+pipelines are not used in the current project but that might change in
+the future.
 
 # Data Transformation
 
@@ -131,19 +150,31 @@ The figure shows as an example of combining WHO surveillance data with
 
 # Time Series forecasting
 
+The [`analysis`](./analysis/) folder contains scripts for fitting ML
+models for time series forecasting. I experiment with Gradient boosted
+trees to forecast disease incidence in the week ahead, currently based
+on some date and seasonal features as well as the counts of symptom
+related posts aggregated per week.
+
+Model fits are integrated into the pipeline, predictions not yet. As
+this was not a focus of the Data engineering Zoomcamp, this is very much
+work in progress and might be developed further during the upcoming
+MLOps zoomcamp.
+
 # CI/CD
 
-Continuous deployment is accomplished using `github` actions (see
-[](.github/workflows/)).
+Continuous integration and deployment is accomplished using `github`
+actions (see [.github/workflows/](.github/workflows/)).
 
 The final container build is split in two parts on each push:
 
-1.  If `requirements.txt` has changed the environment container defined
-    in [](./orchestration/Dockerfile_env) is built and pushed to
-    dockerhub (`kantundpeterpan/digepi_bsky_env`).
+1.  If `requirements.txt` has changedm the environment container defined
+    in [./orchestration/Dockerfile_env](./orchestration/Dockerfile_env)
+    is built and pushed to dockerhub
+    (`kantundpeterpan/digepi_bsky_env`).
 2.  Based on the environment image, the actual pipeline image
-    ([](./orchestration/Dockerfile)) is built and pushed to dockerhub
-    (`kantundpeterpan/digepi_bsky`).
+    ([./orchestration/Dockerfile](./orchestration/Dockerfile)) is built
+    and pushed to dockerhub (`kantundpeterpan/digepi_bsky`).
 
 # Workflow automation with `kestra`
 

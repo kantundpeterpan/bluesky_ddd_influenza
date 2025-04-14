@@ -16,7 +16,7 @@ The idea is to extract an epidemiological signal from social media posts by coun
 
 # Pipeline schema
 
-![](./zcde_docs/img/pipeline_graph.svg)
+![](./zcde_docs/img/pipeline_graph.jpeg)
 
 # Tools
 

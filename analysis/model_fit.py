@@ -4,6 +4,8 @@ import argparse
 import joblib
 import logging
 import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
 
 sys.path.append(os.path.abspath("../"))
 
@@ -20,6 +22,8 @@ from analysis.load_dfs import (
     load_post_count_ili_upsampled
 )
 from analysis.model_evaluation import evaluate, plot_predictions, plot_feature_importance
+from analysis.gc_tools import create_service_account_credentials
+
 from pathlib import Path
 import pandas as pd
 
@@ -50,14 +54,15 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 def fit_and_evaluate(
     data_path: str,
-    dataset: str = 'grippe_posts',
+    dataset: str = 'grippe_posts_fr',
     model_type: str = 'HistGradientBoostingRegressor',
     split_date: str = '2024-08-01', lags: int = 2, weeks_ahead: int = 1,
     target_col: str = 'ili_incidence', normalize_y: bool = True,
     cols_to_drop: list = None, split_data: bool = False,
     output_path: str = 'model.joblib',
     figure_path: str = 'figures',
-    restrict_model: bool = False
+    restrict_model: bool = False,
+    gc_creds_env: bool = False
 ):
     """
     Loads data, preprocesses it, fits a model, evaluates it using TimeSeriesSplit,
@@ -80,20 +85,26 @@ def fit_and_evaluate(
 
     logging.info(f"Starting fit_and_evaluate with data_path={data_path}, dataset={dataset}, model_type={model_type}, split_date={split_date}, lags={lags}, weeks_ahead={weeks_ahead}, target_col={target_col}, normalize_y={normalize_y}, cols_to_drop={cols_to_drop}, output_path={output_path}, figure_path={figure_path}, split_data={split_data}, restrict_model={restrict_model}")
 
+    credentials = None
+    if gc_creds_env:
+        credentials = create_service_account_credentials()
+
+
     # Load data
     try:
        # if os.path.exists(data_path):
        #     df = pd.read_csv(data_path, index_col='date', parse_dates=['date'])
         #else:
-        if dataset == "grippe_posts":
-            df = load_post_count_ili('de')
+        if dataset.startswith("grippe_posts"):
+            lang = dataset.split("_")[-1]
+            df = load_post_count_ili(lang, credentials=credentials)
             df = df.rename(columns={'rest_posts':'control_posts', 'grippe_posts':'ili_posts'})
         
         elif dataset == 'llm_filtered':
-            df = load_llm_filtered_post_count()
+            df = load_llm_filtered_post_count(credentials=credentials)
             
         elif 'upsampled' in dataset:
-            df = load_post_count_ili_upsampled(dataset.split("_")[-1]).loc['2023-08-06':'2025-03-30']
+            df = load_post_count_ili_upsampled(dataset.split("_")[-1], credentials=credentials).loc['2023-08-06':'2025-03-30']
         
         else:
             raise ValueError("Unsupported dataset")
@@ -118,6 +129,7 @@ def fit_and_evaluate(
             )
         logging.info("Data prepared for training and testing.")
         logging.info(Xtrain.shape)
+        
     except Exception as e:
         logging.error(f"Error preparing data: {e}")
         raise
@@ -180,7 +192,7 @@ def fit_and_evaluate(
 
     # Evaluate model
     if model_type == 'HistGradientBoostingRegressor':
-        fig = evaluate(model, Xtrain, ytrain, cv, plot = True, return_fig=True)
+        fig, cv_res = evaluate(model, Xtrain, ytrain, cv, plot = True, return_fig=True, return_cv_res=True)
         Path(figure_path).mkdir(parents=True, exist_ok=True)
         fig.savefig(os.path.join(figure_path, 'evaluations.png'))
         
@@ -236,7 +248,7 @@ def fit_and_evaluate(
         fig1.savefig(os.path.join(figure_path, 'predictions.png'))
         logging.info(f"Predictions plot saved to {os.path.join(figure_path, 'predictions.png')}")
         
-        fig2, ax = plot_feature_importance(
+        fig2, ax, imp_df = plot_feature_importance(
             model,
             Xtrain if Xtest is None else Xtest,
             ytrain if ytest is None else ytest , 
@@ -265,12 +277,27 @@ def fit_and_evaluate(
         logging.error(f"Error saving model: {e}")
         raise
 
+    # save results for dashboarding
+    res = pd.DataFrame()
+    res['date'] = df.index
+    res['lang'] = lang
+    res['target'] = df[target_col].values*100_000
+    print(df[target_col])
+    res['cv_preds'] = pd.NA
+    
+    no_val_points = len(cv_res['test_diff']) 
+    res.iloc[-no_val_points:, -1][:] = res['target'].iloc[-no_val_points:].values + cv_res['test_diff']
+    res['abs_diff'] = pd.NA
+    res.iloc[-no_val_points:, -1] = np.abs(cv_res['test_diff'])
+
+    res.to_csv(f"../dbt/digepi_bsky/seeds/{model_type}_{dataset}.csv", index=False)
+    imp_df.melt().to_csv(f"../dbt/digepi_bsky/seeds/{model_type}_{dataset}_featureimp.csv", index = False)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Fit and evaluate a time series model.")
     parser.add_argument("--data_path", type=str, default=".",
                         help="Path to the data file (or data loading instruction).")
-    parser.add_argument("--dataset", type=str, default="grippe_posts", choices=['grippe_posts', 'llm_filtered', 'upsampled_de', 'upsample_fr'],
+    parser.add_argument("--dataset", type=str, default="grippe_posts_fr", choices=['grippe_posts_fr', 'grippe_posts_de', 'llm_filtered', 'upsampled_de', 'upsampled_fr'],
                         help="Name of the dataset to load ('grippe_posts' or 'llm_filtered').")
     parser.add_argument("--model_type", type=str, default="HistGradientBoostingRegressor",
                         help="Type of model to use (HistGradientBoostingRegressor or Ridge).")
@@ -295,6 +322,8 @@ if __name__ == "__main__":
                         help="Whether to split the data into training and testing sets.")
     parser.add_argument("--restrict_model", action="store_true",
                         help="Whether to restrict the model parameters")
+    parser.add_argument("--gc_creds_env", action="store_true",
+                        help="Whether to read Google Cloud credentials from environment variables")
     args = parser.parse_args()
 
     fit_and_evaluate(
@@ -310,5 +339,6 @@ if __name__ == "__main__":
     output_path=args.output_path,
     figure_path=args.figure_path,
     split_data=args.split_data,
-    restrict_model=args.restrict_model
+    restrict_model=args.restrict_model,
+    gc_creds_env=args.gc_creds_env
     )

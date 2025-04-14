@@ -1,37 +1,13 @@
 Downloading:   0%|[32m          [0m|Downloading: 100%|[32m██████████[0m|
-            grippe_posts  rest_posts  ...  season_lag7 day_lag7
-date                                  ...                      
-2023-08-13             3         242  ...       Summer        6
-2023-08-14             0         236  ...       Summer        7
-2023-08-15             1         289  ...       Summer        8
-2023-08-16             5         282  ...       Summer        9
-2023-08-17             3         428  ...       Summer       10
-...                  ...         ...  ...          ...      ...
-2025-03-25            23        4919  ...       Spring       18
-2025-03-26            44        4868  ...       Spring       19
-2025-03-27            33        5216  ...       Spring       20
-2025-03-28            40        4975  ...       Spring       21
-2025-03-29            41        4449  ...       Spring       22
+Mean Absolute Error:     134.68905 +/- 126.63526
+Median MAE + [2.5, 97.5] Percentiles: 117.60733 + [8.09810, 434.01990]
+Root Mean Squared Error: 134.68905 +/- 126.63526
 
-[595 rows x 64 columns]
-date
-2023-08-14     637.999998
-2023-08-15     644.714231
-2023-08-16     651.428464
-2023-08-17     658.142697
-2023-08-18     664.856930
-                 ...     
-2025-03-26    1382.316620
-2025-03-27    1379.028999
-2025-03-28    1375.741379
-2025-03-29    1372.453759
-2025-03-30    1369.166138
-Name: ari_incidence, Length: 595, dtype: float64
-Mean Absolute Error:     198.71741 +/- 191.89420
-Median MAE + [2.5, 97.5] Percentiles: 136.65619 + [1.78643, 706.84143]
-Root Mean Squared Error: 198.71741 +/- 191.89420
+Training R^2: 0.986
+Training MAE: 39.94135
+Training RMSE: 56.05322
 
-Training R^2: 0.988
-Training MAE: 43.59649
-Training RMSE: 55.50666
+Test R^2: 0.412
+Test MAE: 316.62368
+Test RMSE: 407.22607
 

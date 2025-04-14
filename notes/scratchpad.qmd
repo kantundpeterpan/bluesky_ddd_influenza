@@ -17,14 +17,14 @@ format:
 ```{mermaid}
 graph LR
     subgraph kestra 
-        dlt(dlt) --- posts
+        dlt(<img src="https://dlthub.com/docs/assets/images/dlt-pacman-b67f01290996fde3a5a12edbde2186bc.gif"/>) --- posts
         llm --- bqstaging
         llm -- annotation --> bqstaging
         posts --> bqstaging[<b>GBQ</b> \n stage area \n 1 table per kw]
         dlt -- housekeeping --> count
         dlt -- case data --> who_tables
         dlt -- case data --> cdc_tables
-        subgraph BigQuery data lake
+        subgraph BigQuery data lake[<img src="https://images.icon-icons.com/2699/PNG/512/google_bigquery_logo_icon_168150.png"/>]
           bqstaging
           who_tables
           cdc_tables
@@ -40,7 +40,7 @@ graph LR
         end
     end
 
-    bsky[bsky API] --> dlt
+    bsky[<img src='../zcde_docs/img/bluesky_logo.png' width="20px"/> bsky API] --> dlt
     WHO --> dlt
     CDC --> dlt
     bq --> looker[Looker studio \n dashboard]

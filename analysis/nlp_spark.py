@@ -119,7 +119,7 @@ def prepare_french_tweets_for_count_vectorizer(spark, df, vectorizer_params=None
     
     count_matrix_df_renamed = count_matrix_df.select(
         [pyspcol("iso_weekstartdate")] + \
-            [pyspcol("dense_vector")[i].alias(word).cast('integer') for i, word in zip(range(len(vocabulary)), vocabulary)]
+            [pyspcol("dense_vector")[i].alias(word).cast('integer') for i, word in enumerate(vocabulary)]
     )
     
     logging.info("Added vocabulary columns")

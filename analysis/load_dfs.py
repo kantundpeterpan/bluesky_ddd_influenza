@@ -14,10 +14,13 @@ from typing import Optional, List
 
 _here_dir = Path(__file__).parent
 
-credentials = service_account.Credentials.from_service_account_file(
+credentials_local = service_account.Credentials.from_service_account_file(
     '../.gc_creds/digepizcde-71333237bf40.json')
 
-def load_post_count_ili(lang: str = 'fr'):
+def load_post_count_ili(lang: str = 'fr', credentials: service_account.Credentials = None):
+
+    if not credentials:
+        credentials = credentials_local
 
     post_count_ili_sql = f"SELECT * FROM `digepizcde.bsky_ili.bsky_ili_{lang}` ORDER BY date"
     post_count_ili_df = pandas_gbq.read_gbq(
@@ -29,7 +32,10 @@ def load_post_count_ili(lang: str = 'fr'):
     
     return post_count_ili_df.iloc[:-1,:]
 
-def load_post_count_ili_upsampled(lang: str = 'fr'):
+def load_post_count_ili_upsampled(lang: str = 'fr', credentials: service_account.Credentials = None):
+
+    if not credentials:
+        credentials = credentials_local
     
     post_count_ili_sql = f"SELECT * FROM `digepizcde.bsky_ili.bsky_ili_{lang}_daily` ORDER BY date"
     post_count_ili_daily_df = pandas_gbq.read_gbq(
@@ -62,7 +68,10 @@ def load_merged_posts_ww(min_weeks = 12, min_mentions = 10):
     
     return post_count_ili_df
 
-def load_llm_filtered_post_count():
+def load_llm_filtered_post_count(credentials: service_account.Credentials = None):
+
+    if not credentials:
+        credentials = credentials_local
 
     llm_filtered_post_count_sql ="SELECT date, llm_post_count, ili_incidence, rest_posts FROM `digepizcde.bsky_ili.bsky_ili_fr_llm_filtered` ORDER BY date"
     llm_filtered_post_count = pandas_gbq.read_gbq(
@@ -108,7 +117,7 @@ def prepare_data_cv(
 def make_train_test(
     df, split_date: str = '2024-08-01', lags: int = 2, weeks_ahead: int = 1,
     target_col: str = 'ili_incidence', normalize_y: bool = True, 
-    cols_to_trop: Optional[List[str]] = None
+    cols_to_drop: Optional[List[str]] = None
     ):
     
     ytrain = df[target_col].loc[:split_date].iloc[lags+weeks_ahead:]
@@ -123,8 +132,8 @@ def make_train_test(
         ytrain = ytrain.divide(ytrain.max())
         ytest = ytest.divide(ytest.max())
         
-    if cols_to_trop:
-        X = df.drop(cols_to_trop, axis = 1)
+    if cols_to_drop:
+        X = df.drop(cols_to_drop, axis = 1)
     else:
         X = df.copy()
         

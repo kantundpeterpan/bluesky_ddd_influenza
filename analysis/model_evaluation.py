@@ -5,7 +5,11 @@ from sklearn.inspection import permutation_importance
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def evaluate(model, X, y, cv, model_prop=None, model_step=None, plot=False, plot_filepath="evaluation_metrics.png", return_fig=False):
+def evaluate(
+    model, X, y, cv, model_prop=None, model_step=None,
+    plot=False, plot_filepath="evaluation_metrics.png",
+    return_fig=False, return_cv_res=False
+    ):
     """
     Evaluates a model using cross-validation and optionally plots the distribution of MAE and RMSE.
 
@@ -100,8 +104,12 @@ def evaluate(model, X, y, cv, model_prop=None, model_step=None, plot=False, plot
         axes[2].set_ylabel('Prediction')
         axes[2].set_title('Prediction vs Ground Truth')
 
-        if return_fig:
+        if return_fig and return_cv_res:
+            return fig, cv_results
+        elif return_fig:
             return fig
+        else:
+            return_cv_res
 
 
 def plot_predictions(
@@ -164,4 +172,4 @@ def plot_feature_importance(
     ax.figure.tight_layout()
     
     
-    return ax.figure, ax
+    return ax.figure, ax, importances

@@ -128,8 +128,14 @@ def fit_and_evaluate(
                 target_col=target_col, normalize_y=normalize_y, cols_to_drop=cols_to_drop
             )
         logging.info("Data prepared for training and testing.")
-        logging.info(Xtrain.shape)
+
+        Xtrain = Xtrain.loc[~ytrain.isna().values]
+        ytrain = ytrain.dropna()
         
+        if Xtest is not None:
+            Xtest = Xtest.loc[~ytest.isna().values]
+            ytest = ytest.dropna()
+            
     except Exception as e:
         logging.error(f"Error preparing data: {e}")
         raise

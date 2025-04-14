@@ -20,6 +20,17 @@ The idea is to extract an epidemiological signal from social media posts by coun
 
 # Tools
 
+**Data Extraction and Loading**
+- `dlt`: data load tool 
+
+**Data warehouse**
+- Google BigQuery
+
+**Data Transformation**
+- `dbt`: data build tool
+
+**
+
 # Data Sources
 
 *   **Bluesky API**: This provides real-time access to posts and user data on the Bluesky platform. 
@@ -142,14 +153,15 @@ It reads the credentials from environment variables:
 
 ```{.yaml filename="dbt/digepi_bskydocker_config/profiles.yaml"}
 keyfile_json:
-        type: service_account
-        project_id: digepizcde
-        private_key: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY') }}"
-        client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"
-        private_key_id: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY_ID') }}"
-        client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"
+  type: service_account
+  project_id: digepizcde
+  private_key: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY') }}"
+  client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"
+  private_key_id: "{{ env_var('DBT_BIGQUERY_PRIVATE_KEY_ID') }}"
+  client_email: "{{ env_var('DBT_BIGQUERY_CLIENT_EMAIL') }}"
 ```
 
+## Flow updates
 
-## Flow organizations
+`kestra` is connected to the repo using a webhook which triggers a `Sync Git` flow on each push.
 

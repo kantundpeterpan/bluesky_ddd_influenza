@@ -31,6 +31,12 @@ tasks:
     flowId: case_data_ingestion
     namespace: digepi_zcde
 
+    #refit forecasting model on new data
+  - id: model_fit
+    type: io.kestra.plugin.core.flow.Subflow
+    flowId: bsky_fit_model
+    namespace: digepi_zcde
+
     # run dbt to build update the database
   - id: run_dbt
     type: io.kestra.plugin.core.flow.Subflow

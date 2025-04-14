@@ -1,0 +1,62 @@
+id: bsky_fit_model
+namespace: digepi_zcde
+
+inputs:
+  - id: langs
+    type: ARRAY
+    itemType: STRING
+    required: true
+    defaults:
+      - fr
+      - de
+
+variables:
+  bq_private_key: "{{ secret('BIGQUERY_PRIVATE_KEY' ) }}"
+  bq_client_email: "{{ secret('BIGQUERY_CLIENT_EMAIL') }}"
+  bq_project_id: "{{ secret('BIGQUERY_PROJECT_ID') }}"
+  bq_private_key_id: "{{ secret('BIGQUERY_PRIVATE_KEY_ID') }}"
+  bq_client_id: "{{ secret('BIGQUERY_CLIENT_ID') }}"
+  bq_auth_uri: "{{ secret('BIGQUERY_AUTH_URI') }}"
+  bq_token_uri: "{{ secret('BIGQUERY_TOKEN_URI') }}"
+  bq_auth_provider_x509_cert_url: "{{ secret('BIGQUERY_AUTH_PROVIDER_X509_CERT_URL') }}"
+  bq_client_x509_cert_url: "{{ secret('BIGQUERY_CLIENT_X509_CERT_URL') }}"
+  bq_universe_domain: "{{ secret('BIGQUERY_UNIVERSE_DOMAIN') }}"
+
+tasks:
+  - id: fit_model_dbt_seed
+    type: io.kestra.plugin.scripts.shell.Commands
+    timeout: PT25M
+    retry:
+        type: constant
+        maxAttempt: 3
+        interval: PT10S
+    taskRunner:
+        type: io.kestra.plugin.scripts.runner.docker.Docker
+        pullPolicy: ALWAYS
+    containerImage: kantundpeterpan/digepi_bsky:latest
+    env:
+        DBT_PROJECT: "{{ vars.bq_project_id }}"
+        DBT_BIGQUERY_PRIVATE_KEY: "{{ vars.bq_private_key }}"
+        DBT_BIGQUERY_PRIVATE_KEY_ID: "{{ vars.bq_private_key_id }}"
+        DBT_BIGQUERY_CLIENT_EMAIL: "{{ vars.bq_client_email }}"
+        DBT_BIGQUERY_CLIENT_ID: "{{ vars.bq_client_id }}"
+        DBT_BIGQUERY_AUTH_URI: "{{ vars.bq_auth_uri }}"
+        DBT_BIGQUERY_TOKEN_URI: "{{ vars.bq_token_uri }}"
+        DBT_BIGQUERY_AUTH_PROVIDER_X509_CERT_URL: "{{ vars.bq_auth_provider_x509_cert_url }}"
+        DBT_BIGQUERY_CLIENT_X509_CERT_URL: "{{ vars.bq_client_x509_cert_url }}"
+        DBT_BIGQUERY_UNIVERSE_DOMAIN: "{{ vars.bq_universe_domain }}"
+        BIGQUERY_PROJECT_ID: "{{ vars.bq_project_id }}"
+        BIGQUERY_PRIVATE_KEY: "{{ vars.bq_private_key }}"
+        BIGQUERY_PRIVATE_KEY_ID: "{{ vars.bq_private_key_id }}"
+        BIGQUERY_CLIENT_EMAIL: "{{ vars.bq_client_email }}"
+        BIGQUERY_CLIENT_ID: "{{ vars.bq_client_id }}"
+        BIGQUERY_AUTH_URI: "{{ vars.bq_auth_uri }}"
+        BIGQUERY_TOKEN_URI: "{{ vars.bq_token_uri }}"
+        BIGQUERY_AUTH_PROVIDER_X509_CERT_URL: "{{ vars.bq_auth_provider_x509_cert_url }}"
+        BIGQUERY_CLIENT_X509_CERT_URL: "{{ vars.bq_client_x509_cert_url }}"
+        BIGQUERY_UNIVERSE_DOMAIN: "{{ vars.bq_universe_domain }}"
+
+    commands:
+      - cd /project/analysis/ && python model_fit.py --restrict_model --output_path models/histgrad_no_split_restrict_de  --figure_path figures_de --dataset grippe_posts_de --target_col ari_incidence
+      - cd /project/analysis/ && python model_fit.py --restrict_model --output_path models/histgrad_no_split_restrict_fr  --figure_path figures_fr --dataset grippe_posts_fr --target_col ili_incidence
+      - cd /project/dbt/digepi_bsky && dbt seed --profiles-dir ./docker_config

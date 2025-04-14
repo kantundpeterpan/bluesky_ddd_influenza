@@ -263,3 +263,8 @@ keyfile_json:
 
 `kestra` is connected to the repo using a webhook which triggers a
 `Sync Git` flow on each push.
+
+# Current deployement
+
+A `kestra` instance is running on my cloud machine using
+`docker-compose`.

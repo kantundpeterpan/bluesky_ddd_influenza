@@ -7,7 +7,7 @@
 
 # Check if a JSON file and prefix are provided as arguments.
 if [ $# -lt 1  ] || [ $# -gt 2 ]; then
-  echo "Usage: $0 <json_file> [<prefix>"
+  echo "Usage: $0 <json_file> [<prefix>]"
   exit 1
 fi
 
@@ -38,5 +38,7 @@ done
 echo "Environment variables exported from '$json_file' with prefix '$prefix'."
 
 kestra_secret_encoder gc_from_env.yml --no_encode --prefix '' -o .env
+docker run -it --env-file .env kantundpeterpan/digepi_bsky:latest /bin/sh
+rm .env
 
 exit 0

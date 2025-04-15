@@ -26,7 +26,7 @@ def load_post_count_ili(lang: str = 'fr', credentials: service_account.Credentia
     
     post_count_ili_df = extact_time_features(post_count_ili_df)
     
-    return post_count_ili_df.iloc[:-1,:]
+    return post_count_ili_df
 
 def load_post_count_ili_upsampled(lang: str = 'fr', credentials: service_account.Credentials = None):
 

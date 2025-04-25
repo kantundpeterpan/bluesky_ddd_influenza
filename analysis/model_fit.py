@@ -154,7 +154,8 @@ def fit_and_evaluate(
                             early_stopping='auto',
                             validation_fraction=0.2,
                             max_features=0.8,
-                            random_state=42
+                            random_state=42,
+                            loss = 'gamma'
                         )
                 # model = HistGradientBoostingRegressor(
                 #         max_leaf_nodes=10,          # Limit the number of leaves per tree (simpler trees)

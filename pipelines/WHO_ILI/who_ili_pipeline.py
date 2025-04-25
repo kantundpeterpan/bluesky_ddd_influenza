@@ -25,6 +25,8 @@ def run(dataset_id: Literal['fluid', 'flunet'], verbose = True ):
     
     df = load_who_flu_data(url)
     
+    print(df.query("COUNTRY_CODE.eq('FRA')").ISO_WEEKSTARTDATE.max())
+    
     if dataset_id == "flunet":
         df = df.drop(['BVIC_DELUNK', 'BYAM'], axis = 1)
     
@@ -34,8 +36,7 @@ def run(dataset_id: Literal['fluid', 'flunet'], verbose = True ):
     load_info = pipeline.run(
         df,
         table_name="who_" + dataset_id,
-        write_disposition="replace",
-        primary_key=("COUNTRY_AREA_TERRITORY", "ISO_WEEKSTARTDATE")
+        write_disposition="replace"
     )
 
     if verbose:

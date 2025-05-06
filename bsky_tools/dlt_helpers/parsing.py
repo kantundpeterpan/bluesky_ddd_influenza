@@ -7,10 +7,12 @@ from datetime import timedelta
 from urllib.parse import quote_plus
 from collections import Counter
 import pandas as pd
+from requests.exceptions import HTTPError
 
 # Bluesky API Client
 bluesky_client = RESTClient(
-    base_url="https://public.api.bsky.app/xrpc/",
+    # base_url="https://public.api.bsky.app/xrpc/",
+    base_url="https://api.bsky.app/xrpc/",
     paginator=JSONResponseCursorPaginator(cursor_path="cursor", cursor_param="cursor"),
 )
 
@@ -81,11 +83,15 @@ def get_posts_count_adaptive_sliding_window_reverse(
             "limit": limit,
         }
 
-
-        posts = bluesky_client.get(  # Explicitly using GET
+        response = bluesky_client.get(  # Explicitly using GET
             "app.bsky.feed.searchPosts",
             params=params
-        ).json()
+        )
+        
+        if response.status_code != 200:
+            raise HTTPError(f"Error code: {response.status_code}")
+
+        posts = response.json()
         
         # print(posts)
         try:
@@ -235,10 +241,17 @@ def get_posts_adaptive_sliding_window_reverse(query: str, start_date: str, end_d
             "limit": limit,
         }
 
-        posts = bluesky_client.get(  # Explicitly using GET
+
+        response = bluesky_client.get(  # Explicitly using GET
             "app.bsky.feed.searchPosts",
             params=params
-        ).json()['posts']
+        )
+        
+        if response.status_code != 200:
+            raise HTTPError(f"Error code: {response.status_code}")
+
+
+        posts = response.json()['posts']
 
         # No results found in this window
         # that means that there are no posts between current next_date

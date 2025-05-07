@@ -38,7 +38,7 @@ def fetch_posts(
     start_date: str,
     end_date: Optional[str] = None,
     out_file: str = None,
-    n_jobs: int = 50,
+    n_jobs: int = 3,
     verbose: bool = True
 ):
     

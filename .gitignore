@@ -1,4 +1,5 @@
 .gc_creds
+.bsky_creds
 .venv
 secrets.toml
 *.duckdb

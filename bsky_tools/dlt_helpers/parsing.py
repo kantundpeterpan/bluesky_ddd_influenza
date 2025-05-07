@@ -8,14 +8,16 @@ from urllib.parse import quote_plus
 from collections import Counter
 import pandas as pd
 from requests.exceptions import HTTPError
+import os
 
 # Bluesky API Client
 bluesky_client = RESTClient(
     # base_url="https://public.api.bsky.app/xrpc/",
     base_url="https://api.bsky.app/xrpc/",
-    paginator=JSONResponseCursorPaginator(cursor_path="cursor", cursor_param="cursor"),
+    # paginator=JSONResponseCursorPaginator(cursor_path="cursor", cursor_param="cursor"),
 )
 
+access_token = os.getenv("BSKY_ACCESS_TOKEN")
 
 def sanitize_string_with_emojis(input_string):
     """
@@ -80,7 +82,8 @@ def get_posts_count_adaptive_sliding_window_reverse(
             "q": encoded_query,
             "until": until_str,
             "since": start_date,  # Fetch until the overall start date, for each query the start date is a fixed value
-            "limit": limit,
+            # "limit": limit,
+            # "Authorization": f"Bearer {access_token}"
         }
 
         response = bluesky_client.get(  # Explicitly using GET
@@ -238,7 +241,8 @@ def get_posts_adaptive_sliding_window_reverse(query: str, start_date: str, end_d
             "q": encoded_query,
             "until": until_str,
             "since": start_date,  # Fetch until the overall start date, for each query the start date is a fixed value
-            "limit": limit,
+            # "limit": limit,
+            "Authorization": f"Bearer {access_token}"
         }
 
 

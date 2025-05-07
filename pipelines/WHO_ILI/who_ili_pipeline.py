@@ -9,7 +9,7 @@ def load_who_flu_data(url: str):
     df['ISO_WEEKSTARTDATE'] = pd.to_datetime(df.ISO_WEEKSTARTDATE).dt.date
     return df
 
-def run(dataset_id: Literal['fluid', 'flunet'], verbose = True ):
+def run(dataset_id: Literal['fluid', 'flunet'], verbose = True, write_disposition = 'replace'):
     
     url = {
         'fluid':FLUID_URL,
@@ -36,7 +36,7 @@ def run(dataset_id: Literal['fluid', 'flunet'], verbose = True ):
     load_info = pipeline.run(
         df,
         table_name="who_" + dataset_id,
-        write_disposition="replace"
+        write_disposition=write_disposition
     )
 
     if verbose:

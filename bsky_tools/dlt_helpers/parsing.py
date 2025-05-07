@@ -9,6 +9,7 @@ from collections import Counter
 import pandas as pd
 from requests.exceptions import HTTPError
 import os
+import time
 
 # Bluesky API Client
 bluesky_client = RESTClient(
@@ -154,6 +155,7 @@ def get_posts_count_adaptive_sliding_window_reverse(
         next_date = earliest_post_time
         next_date -= timedelta(seconds=5)
 
+        time.sleep(2)
 
 def create_query_params_from_date(
     query: str,
@@ -315,6 +317,8 @@ def get_posts_adaptive_sliding_window_reverse(query: str, start_date: str, end_d
 
         # Add a small buffer to avoid duplicate entries -- subtracting to move it back
         next_date -= timedelta(microseconds=1)
+        
+        time.sleep(2)
 
 # Initialize dlt pipeline with DuckDB
 # pipeline = dlt.pipeline(

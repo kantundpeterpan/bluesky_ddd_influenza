@@ -76,7 +76,7 @@ def bsky_housekeeping_query(
     start_date: str,
     end_date: Optional[str] = None,
     out_file: str = None,
-    n_jobs: int = os.cpu_count()
+    n_jobs: int = 1
 ) -> pd.DataFrame:
     """
     Queries the Bluesky API for a given query term within a specified date range,
@@ -150,7 +150,7 @@ def run(
     start_date: str,
     end_date: Optional[str] = None,
     out_file: str = None,
-    n_jobs: int = 3,
+    n_jobs: int = 1,
     verbose: bool = True
 ):
     # Initialize dlt pipeline

@@ -11,7 +11,7 @@ traditional epidemiological data sources from organizations like the WHO
 and CDC, this project aims to assess the feasibility and effectiveness
 of using Bluesky as an early warning system for disease outbreaks.
 
-This is combined project for the 2025 Data Engineering Zoomcamp and my
+This is a combined project for the 2025 Data Engineering Zoomcamp and my
 course in Digital Epidemiology at Hasselt University.
 
 The idea is to extract an epidemiological signal from social media posts
@@ -206,7 +206,7 @@ In the open-source version of `kestra`, secrets are handled via
 environement variables that need to be `base64` encoded, prefixed with
 `SECRET_` and passed to the the docker container on startup. I created a
 python commandline tool that abstracts some of the complexity :
-[`credentials_handler`](https://github.com/kantundpeterpan/credentials_handler).
+[`kestra_secret_encoder`](https://github.com/kantundpeterpan/kestra_secret_encoder).
 
 ### `dlt`
 
@@ -285,10 +285,10 @@ A `kestra` instance is running on my cloud machine using
 git clone https://github.com/kantundpeterpan/bluesky_ddd_influenza.git
 ```
 
-2.  Install `credentials_handler`
+2.  Install `kestra_secret_encoder`
 
 ``` bash
-pip install git+https://github.com/kantundpeterpan/credentials_handler
+pip install git+https://github.com/kantundpeterpan/kestra_secret_encoder
 ```
 
 ### Use `kestra`
@@ -316,7 +316,7 @@ google_cloud:
 
 ``` bash
 cd orchestration/kestra
-credentials_handler kestra mapping.yml
+kestra_secret_encoder mapping.yml
 ```
 
 - Fire up `kestra`

@@ -11,7 +11,7 @@ format:
 
 Social media platforms have increasingly become valuable sources of real-time information, reflecting public sentiment and behavior. This project explores the potential of Bluesky, a relatively new social media platform, for digital disease detection (DDD), specifically focusing on influenza-like illness (ILI). By building an end-to-end data pipeline to collect, process, and analyze Bluesky data in conjunction with traditional epidemiological data sources from organizations like the WHO and CDC, this project aims to assess the feasibility and effectiveness of using Bluesky as an early warning system for disease outbreaks.
 
-This is combined project for the 2025 Data Engineering Zoomcamp and my course in Digital Epidemiology at Hasselt University.
+This is a combined project for the 2025 Data Engineering Zoomcamp and my course in Digital Epidemiology at Hasselt University.
 
 The idea is to extract an epidemiological signal from social media posts by counting posts that match queries related to ILI and correlate them with public health surveillance data. Similar studies have been performed using data from `twitter` who yielded promising results. For obvious reasons, this kind of study is not feasible anymore and `bluesky` is a potential alternative.
 

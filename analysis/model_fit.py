@@ -182,7 +182,7 @@ def fit_and_evaluate(
         raise
 
     # Define TimeSeriesSplit
-    cv =  TimeSeriesSplit(
+    cv = TimeSeriesSplit(
         n_splits=42 if 'upsampled' not in dataset else 220,
         gap=0,
         max_train_size=200,
@@ -285,17 +285,22 @@ def fit_and_evaluate(
         raise
 
     # save results for dashboarding
-    res = pd.DataFrame()
+    res = pd.DataFrame(index = df.index)
     res['date'] = df.index
     res['lang'] = lang
     res['target'] = df[target_col].values*100_000
     print(df[target_col])
-    res['cv_preds'] = pd.NA
     
+    res['cv_preds'] = pd.NA
     no_val_points = len(cv_res['test_diff']) 
-    res.iloc[-no_val_points:, -1][:] = res['target'].iloc[-no_val_points:].values + cv_res['test_diff']
+    # res.iloc[-no_val_points:, -1][:] = res['target'].iloc[-no_val_points:].values + cv_res['test_diff']
+    
+    # keep track of index, need to take into account recent NaN values
+    pred_idx = ytrain.iloc[-no_val_points:].index
+    res.loc[pred_idx, 'cv_preds'] = ytrain.iloc[-no_val_points:].values + cv_res['test_diff']
+
     res['abs_diff'] = pd.NA
-    res.iloc[-no_val_points:, -1] = np.abs(cv_res['test_diff'])
+    res.loc[pred_idx, 'abs_diff'] = np.abs(cv_res['test_diff'])
 
     res.to_csv(f"../dbt/digepi_bsky/seeds/{model_type}_{dataset}.csv", index=False)
     imp_df.melt().to_csv(f"../dbt/digepi_bsky/seeds/{model_type}_{dataset}_featureimp.csv", index = False)
